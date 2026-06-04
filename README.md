@@ -1,0 +1,1 @@
+# salon-accounting

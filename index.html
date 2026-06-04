@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบัญชี ร้านสระผม v0.01 (Firebase Cloud Real-time)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-800">
+
+    <div class="fixed bottom-4 right-4 bg-gray-900/80 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-xs font-mono z-50">
+        v0.01
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <div class="flex-1 overflow-y-auto p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">ระบบบัญชีรายรับ-รายจ่าย ร้านสระผม 💇‍♀️ (Firebase Cloud)</h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-green-50 p-6 rounded-2xl border border-green-200 shadow-xs">
+                    <p class="text-sm font-medium text-green-600">รายรับรวม (ปี <span class="view-year"></span>)</p>
+                    <p class="text-3xl font-bold text-green-700 mt-2">฿<span id="total-income">0.00</span></p>
+                </div>
+                <div class="bg-red-50 p-6 rounded-2xl border border-red-200 shadow-xs">
+                    <p class="text-sm font-medium text-red-600">รายจ่ายรวม (ปี <span class="view-year"></span>)</p>
+                    <p class="text-3xl font-bold text-red-700 mt-2">฿<span id="total-expense">0.00</span></p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-xs">
+                    <p class="text-sm font-medium text-blue-600">กำไรสุทธิ (ปี <span class="view-year"></span>)</p>
+                    <p class="text-3xl font-bold text-blue-700 mt-2">฿<span id="net-profit">0.00</span></p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                    <h3 class="text-lg font-semibold">กราฟสรุปรายเดือนประจำปี <span id="current-year"></span></h3>
+                    <div class="flex items-center gap-2 text-sm">
+                        <label for="year-filter" class="font-medium text-gray-600">เลือกปีที่ต้องการดู:</label>
+                        <select id="year-filter" class="p-1.5 border border-gray-300 rounded-md bg-white font-medium shadow-xs">
+                        </select>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="financeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
+                    <h3 class="text-lg font-semibold mb-4" id="form-title">บันทึกรายการใหม่</h3>
+                    <form id="finance-form" class="space-y-4">
+                        <input type="hidden" id="edit-id" value="">
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">วันที่</label>
+                            <input type="date" id="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ประเภท</label>
+                            <select id="type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                                <option value="income">รายรับ (ค่าบริการ/ขายของ)</option>
+                                <option value="expense">รายจ่าย (ซื้อของ/ค่าน้ำไฟ/ค่าแรง)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">รายละเอียดรายการ</label>
+                            <input type="text" id="description" placeholder="เช่น สระ-ไดร์ ลูกค้า VIP" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
+                            <input type="number" id="amount" placeholder="0.00" min="0" step="0.01" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">หมายเหตุ (ถ้ามี)</label>
+                            <input type="text" id="notes" placeholder="เช่น โอนเงินเข้าบัญชีธนาคารกสิกร, บิลเงินสดเลขที่ 01" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                        </div>
+                        
+                        <div class="flex flex-col gap-2">
+                            <button type="submit" id="btn-submit" class="w-full bg-indigo-600 text-white p-2 rounded-md font-medium hover:bg-indigo-700 transition cursor-pointer">บันทึกข้อมูล</button>
+                            <button type="button" id="btn-cancel-edit" class="w-full bg-gray-200 text-gray-700 p-2 rounded-md font-medium hover:bg-gray-300 transition hidden cursor-pointer">ยกเลิกการแก้ไข</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 lg:col-span-2">
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-100 mb-6 gap-4 bg-gray-50 p-4 rounded-lg">
+                        <div>
+                            <h3 class="text-md font-semibold text-gray-700">เรียกดูข้อมูลตามช่วงเวลา</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">*ระบบจะกรองตั้งแต่วันต้นปีจนถึงวันที่ปัจจุบันของไทยให้อัตโนมัติ</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 text-sm">
+                            <input type="date" id="filter-start" class="p-1.5 border border-gray-300 rounded-md bg-white">
+                            <span class="text-gray-500">ถึง</span>
+                            <input type="date" id="filter-end" class="p-1.5 border border-gray-300 rounded-md bg-white">
+                            <button id="btn-clear-date" class="bg-gray-200 text-gray-700 px-2 py-1.5 rounded-md text-xs font-medium hover:bg-gray-300 transition cursor-pointer" title="แสดงข้อมูลทั้งหมด">ล้างค่า</button>
+                            <button id="btn-export" class="bg-emerald-600 text-white px-3 py-1.5 rounded-md font-medium hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer">
+                                📊 Export Excel ฟอร์มบัญชี
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                        <h3 class="text-lg font-semibold">ประวัติรายการในตาราง</h3>
+                        
+                        <div class="flex flex-wrap items-center gap-4 text-sm w-full sm:w-auto justify-between sm:justify-end">
+                            <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                                <label for="search-input" class="text-gray-600 shrink-0 font-medium">ค้นหา:</label>
+                                <input type="text" id="search-input" placeholder="พิมพ์คำค้นหารายการ..." class="p-1 border border-gray-300 rounded-md bg-white w-full sm:w-44 focus:outline-hidden focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-1.5">
+                                    <label for="type-filter" class="text-gray-600">ประเภท:</label>
+                                    <select id="type-filter" class="p-1 border border-gray-300 rounded-md bg-white font-medium">
+                                        <option value="all">ทั้งหมด</option>
+                                        <option value="income">เฉพาะรายรับ</option>
+                                        <option value="expense">เฉพาะรายจ่าย</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center gap-1.5">
+                                    <label for="per-page" class="text-gray-600">แสดง:</label>
+                                    <select id="per-page" class="p-1 border border-gray-300 rounded-md bg-white">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="all">ทั้งหมด</option>
+                                    </select>
+                                    <span class="text-gray-600">รายการ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto min-h-[300px]">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 text-sm uppercase">
+                                    <th class="p-3 w-12">ลำดับ</th>
+                                    <th class="p-3 cursor-pointer hover:bg-gray-100 select-none transition rounded-xs" id="th-date">
+                                        วันที่ <span id="sort-icon-date">🔽</span>
+                                    </th>
+                                    <th class="p-3">รายการ</th>
+                                    <th class="p-3">ประเภท</th>
+                                    <th class="p-3 text-right cursor-pointer hover:bg-gray-100 select-none transition rounded-xs" id="th-amount">
+                                        จำนวนเงิน <span id="sort-icon-amount" class="text-gray-400"></span>
+                                    </th>
+                                    <th class="p-3 text-center w-24">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-table-body" class="divide-y divide-gray-100 text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-4 text-sm border-t border-gray-100 pt-4">
+                        <span id="page-info" class="text-gray-600 font-medium">กำลังโหลด...</span>
+                        <div class="flex gap-2">
+                            <button id="btn-prev" class="px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer">
+                                < ก่อนหน้า
+                            </button>
+                            <button id="btn-next" class="px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer">
+                                ถัดไป >
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqqZS_MmWqPw4G0EzTfWxsyp5AXiI5SEA",
+            authDomain: "salon-accounting-f44bd.firebaseapp.com",
+            projectId: "salon-accounting-f44bd",
+            storageBucket: "salon-accounting-f44bd.firebasestorage.app",
+            messagingSenderId: "1098548783182",
+            appId: "1:1098548783182:web:06c13ddb48c68ff7ee7b1f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const recordsCollection = collection(db, "salon_records");
+        const logCollection = collection(db, "activity_logs"); 
+
+        window.transactions = []; 
+        let selectedYear = new Date().getFullYear();
+        let financeChart;
+        let isFirstLoad = true; 
+        
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let selectedTypeFilter = 'all'; 
+        let searchQuery = ''; 
+        let dateStartFilter = ''; 
+        let dateEndFilter = '';   
+        let sortedRecords = [];
+        let currentSortKey = 'date'; 
+        let currentSortDirection = 'desc'; 
+
+        function formatCurrency(amount) {
+            return Number(amount).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        onSnapshot(recordsCollection, (snapshot) => {
+            document.getElementById('page-info').innerText = "🔄 กำลังซิงค์ข้อมูล Cloud...";
+            window.transactions = [];
+            
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                data.id = doc.id; 
+                window.transactions.push(data);
+            });
+
+            if (isFirstLoad) {
+                if (window.transactions.length > 0) {
+                    const yearsInDb = window.transactions.map(t => new Date(t.date).getFullYear());
+                    selectedYear = Math.max(...yearsInDb); 
+                }
+                
+                const options = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' };
+                const formatter = new Intl.DateTimeFormat('en-CA', options); 
+                const todayThai = formatter.format(new Date());
+
+                dateStartFilter = `${selectedYear}-01-01`;
+                dateEndFilter = todayThai; 
+                
+                document.getElementById('filter-start').value = dateStartFilter;
+                document.getElementById('filter-end').value = dateEndFilter;
+                
+                isFirstLoad = false;
+            }
+
+            updateYearDropdown();
+            updateUI();
+        }, (error) => {
+            alert("Firebase Error: " + error.message);
+        });
+
+        async function writeActivityLog(actionType, details) {
+            try {
+                await addDoc(logCollection, {
+                    user: "Test", 
+                    action: actionType,
+                    details: details,
+                    timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) 
+                });
+            } catch (e) {
+                console.error("ไม่สามารถเขียน Log ได้: ", e);
+            }
+        }
+
+        function updateYearDropdown() {
+            const yearFilter = document.getElementById('year-filter');
+            const years = window.transactions.map(t => new Date(t.date).getFullYear());
+            years.push(new Date().getFullYear());
+            
+            const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
+            const currentSelected = yearFilter.value || selectedYear;
+            
+            yearFilter.innerHTML = '';
+            uniqueYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.innerText = year;
+                yearFilter.appendChild(option);
+            });
+            
+            yearFilter.value = currentSelected;
+            selectedYear = parseInt(currentSelected);
+        }
+
+        function updateUI() {
+            document.getElementById('current-year').innerText = selectedYear;
+            document.querySelectorAll('.view-year').forEach(el => el.innerText = selectedYear);
+
+            const filteredYearRecords = window.transactions.filter(t => new Date(t.date).getFullYear() === selectedYear);
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let monthlyIncome = Array(12).fill(0);
+            let monthlyExpense = Array(12).fill(0);
+
+            filteredYearRecords.forEach(t => {
+                const month = new Date(t.date).getMonth();
+                if (t.type === 'income') {
+                    totalIncome += t.amount;
+                    monthlyIncome[month] += t.amount;
+                } else {
+                    totalExpense += t.amount;
+                    monthlyExpense[month] += t.amount;
+                }
+            });
+
+            document.getElementById('total-income').innerText = formatCurrency(totalIncome);
+            document.getElementById('total-expense').innerText = formatCurrency(totalExpense);
+            document.getElementById('net-profit').innerText = formatCurrency(totalIncome - totalExpense);
+
+            updateChart(monthlyIncome, monthlyExpense);
+            applySortAndRender();
+        }
+
+        function applySortAndRender() {
+            let processedRecords = [...window.transactions];
+            
+            if (dateStartFilter !== '' && dateEndFilter !== '') {
+                processedRecords = processedRecords.filter(t => 
+                    t.date >= dateStartFilter && t.date <= dateEndFilter
+                );
+            }
+
+            if (searchQuery.trim() !== '') {
+                const query = searchQuery.toLowerCase().trim();
+                processedRecords = processedRecords.filter(t => 
+                    t.description.toLowerCase().includes(query)
+                );
+            }
+
+            if (selectedTypeFilter !== 'all') {
+                processedRecords = processedRecords.filter(t => t.type === selectedTypeFilter);
+            }
+
+            processedRecords.sort((a, b) => {
+                let valA = a[currentSortKey];
+                let valB = b[currentSortKey];
+
+                if (currentSortKey === 'date') {
+                    return currentSortDirection === 'asc' ? new Date(valA) - new Date(valB) : new Date(valB) - new Date(valA);
+                } else if (currentSortKey === 'amount') {
+                    return currentSortDirection === 'asc' ? valA - valB : valB - valA;
+                }
+                return 0;
+            });
+
+            sortedRecords = processedRecords;
+            document.getElementById('sort-icon-date').innerText = currentSortKey === 'date' ? (currentSortDirection === 'asc' ? '🔼' : '🔽') : '';
+            document.getElementById('sort-icon-amount').innerText = currentSortKey === 'amount' ? (currentSortDirection === 'asc' ? '🔼' : '🔽') : '';
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('transaction-table-body');
+            tbody.innerHTML = '';
+            
+            let displayRecords = sortedRecords;
+            const totalItems = displayRecords.length;
+            
+            let startIndex = 0;
+            let limit = totalItems;
+            
+            if (itemsPerPage !== 'all') {
+                limit = parseInt(itemsPerPage);
+                startIndex = (currentPage - 1) * limit;
+                const endIndex = startIndex + limit;
+                displayRecords = displayRecords.slice(startIndex, endIndex);
+            }
+
+            displayRecords.forEach((t, index) => {
+                const rowNumber = startIndex + index + 1; 
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 text-gray-400 font-medium">${rowNumber}</td>
+                    <td class="p-3">${t.date}</td>
+                    <td class="p-3 font-medium">${t.description}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-xs font-semibold ${t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${t.type === 'income' ? 'รายรับ' : 'รายจ่าย'}</span></td>
+                    <td class="p-3 text-right font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">฿${formatCurrency(t.amount)}</td>
+                    <td class="p-3 text-center flex justify-center gap-2">
+                        <button onclick="editTransaction('${t.id}')" class="text-indigo-600 hover:text-indigo-900 font-medium cursor-pointer" title="แก้ไข">✏️</button>
+                        <button onclick="deleteTransaction('${t.id}')" class="text-red-600 hover:text-red-900 font-medium cursor-pointer" title="ลบรายการ">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updatePaginationControls(totalItems);
+        }
+
+        function updatePaginationControls(totalItems) {
+            const prevBtn = document.getElementById('btn-prev');
+            const nextBtn = document.getElementById('btn-next');
+            const pageInfo = document.getElementById('page-info');
+
+            if (itemsPerPage === 'all' || totalItems === 0) {
+                pageInfo.innerText = `แสดงทั้งหมด ${totalItems} รายการ`;
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                return;
+            }
+
+            const limit = parseInt(itemsPerPage);
+            const totalPages = Math.ceil(totalItems / limit);
+            const startItem = (currentPage - 1) * limit + 1;
+            const endItem = Math.min(currentPage * limit, totalItems);
+
+            pageInfo.innerText = `แสดง ${startItem} - ${endItem} จากทั้งหมด ${totalItems} รายการ`;
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        window.editTransaction = function(id) {
+            const item = window.transactions.find(t => t.id === id);
+            if (!item) return;
+
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('date').value = item.date;
+            document.getElementById('type').value = item.type;
+            document.getElementById('description').value = item.description;
+            document.getElementById('amount').value = item.amount;
+            document.getElementById('notes').value = item.notes || ""; 
+
+            document.getElementById('form-title').innerText = "📝 แก้ไขรายการข้อมูล";
+            const submitBtn = document.getElementById('btn-submit');
+            submitBtn.innerText = "อัปเดตข้อมูล";
+            submitBtn.className = "w-full bg-orange-500 text-white p-2 rounded-md font-medium hover:bg-orange-600 transition cursor-pointer";
+            
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            document.getElementById('finance-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.resetFormMode = function() {
+            document.getElementById('edit-id').value = "";
+            document.getElementById('form-title').innerText = "บันทึกรายการใหม่";
+            
+            const submitBtn = document.getElementById('btn-submit');
+            submitBtn.innerText = "บันทึกข้อมูล";
+            submitBtn.className = "w-full bg-indigo-600 text-white p-2 rounded-md font-medium hover:bg-indigo-700 transition cursor-pointer";
+            
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('notes').value = ''; 
+            document.getElementById('type').value = 'income'; 
+            
+            const options = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' };
+            const todayThai = new Intl.DateTimeFormat('en-CA', options).format(new Date());
+            document.getElementById('date').value = todayThai;
+        }
+
+        window.deleteTransaction = async function(id) {
+            const item = window.transactions.find(t => t.id === id);
+            if (!item) return;
+
+            if (confirm(`คุณปิงแน่ใจนะครับ ว่าต้องการลบรายการ "${item.description}"?`)) {
+                try {
+                    await deleteDoc(doc(db, "salon_records", id));
+                    
+                    await writeActivityLog("ลบรายการ", `ลบรายการ: "${item.description}" ยอดเงิน ${item.amount.toFixed(2)} บาท ของวันที่ ${item.date}`);
+                    
+                    if (document.getElementById('edit-id').value === id) { window.resetFormMode(); }
+                } catch (e) {
+                    alert("ลบข้อมูลไม่สำเร็จ: " + e.message);
+                }
+            }
+        }
+
+        function updateChart(incomeData, expenseData) {
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            if (financeChart) { financeChart.destroy(); }
+
+            financeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+                    datasets: [
+                        { label: 'รายรับ', data: incomeData, backgroundColor: '#10B981', borderRadius: 6 },
+                        { label: 'รายจ่าย', data: expenseData, backgroundColor: '#EF4444', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function checkDateFilterAndRender() {
+            dateStartFilter = document.getElementById('filter-start').value;
+            dateEndFilter = document.getElementById('filter-end').value;
+            if (dateStartFilter !== '' && dateEndFilter !== '') {
+                currentPage = 1; 
+                applySortAndRender();
+            }
+        }
+        
+        document.getElementById('filter-start').addEventListener('change', checkDateFilterAndRender);
+        document.getElementById('filter-end').addEventListener('change', checkDateFilterAndRender);
+        
+        document.getElementById('btn-clear-date').addEventListener('click', function() {
+            document.getElementById('filter-start').value = '';
+            document.getElementById('filter-end').value = '';
+            dateStartFilter = '';
+            dateEndFilter = '';
+            currentPage = 1;
+            applySortAndRender();
+        });
+
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            searchQuery = e.target.value; currentPage = 1; applySortAndRender();
+        });
+
+        document.getElementById('btn-cancel-edit').addEventListener('click', () => window.resetFormMode());
+
+        document.getElementById('type-filter').addEventListener('change', function(e) {
+            selectedTypeFilter = e.target.value; currentPage = 1; applySortAndRender();
+        });
+
+        document.getElementById('th-date').addEventListener('click', function() {
+            if (currentSortKey === 'date') { currentSortDirection = currentSortDirection === 'desc' ? 'asc' : 'desc'; } 
+            else { currentSortKey = 'date'; currentSortDirection = 'desc'; }
+            applySortAndRender();
+        });
+
+        document.getElementById('th-amount').addEventListener('click', function() {
+            if (currentSortKey === 'amount') { currentSortDirection = currentSortDirection === 'desc' ? 'asc' : 'desc'; } 
+            else { currentSortKey = 'amount'; currentSortDirection = 'desc'; }
+            applySortAndRender();
+        });
+
+        document.getElementById('per-page').addEventListener('change', function(e) {
+            itemsPerPage = e.target.value; currentPage = 1; renderTable();
+        });
+
+        document.getElementById('btn-prev').addEventListener('click', function() {
+            if (currentPage > 1) { currentPage--; renderTable(); }
+        });
+
+        document.getElementById('btn-next').addEventListener('click', function() {
+            const limit = parseInt(itemsPerPage);
+            const totalPages = Math.ceil(sortedRecords.length / limit);
+            if (currentPage < totalPages) { currentPage++; renderTable(); }
+        });
+
+        document.getElementById('year-filter').addEventListener('change', function(e) {
+            selectedYear = parseInt(e.target.value);
+            dateStartFilter = `${selectedYear}-01-01`;
+            dateEndFilter = `${selectedYear}-12-31`;
+            document.getElementById('filter-start').value = dateStartFilter;
+            document.getElementById('filter-end').value = dateEndFilter;
+            currentPage = 1;
+            updateUI();
+        });
+
+        document.getElementById('finance-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-id').value;
+            
+            const payload = {
+                date: document.getElementById('date').value,
+                type: document.getElementById('type').value,
+                description: document.getElementById('description').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                notes: document.getElementById('notes').value 
+            };
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "salon_records", editId), payload);
+                    await writeActivityLog("แก้ไขรายการ", `แก้ไขรายการไอดี ${editId} เป็น: "${payload.description}" ยอดเงิน ${payload.amount.toFixed(2)} บาท`);
+                    window.resetFormMode();
+                } else {
+                    await addDoc(recordsCollection, payload);
+                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการใหม่: "${payload.description}" ยอดเงิน ${payload.amount.toFixed(2)} บาท ของวันที่ ${payload.date}`);
+                    window.resetFormMode(); 
+                }
+            } catch (error) {
+                alert("บันทึกข้อมูลเข้า Firebase ล้มเหลว: " + error.message);
+            }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', function() {
+            const start = document.getElementById('filter-start').value;
+            const end = document.getElementById('filter-end').value;
+
+            if (!start || !end) { 
+                alert('กรุณาเลือกช่วงวันที่ (เริ่มต้น และ สิ้นสุด) ที่ด้านบนตารางเพื่อส่งออก Excel ครับ'); 
+                return; 
+            }
+
+            if (sortedRecords.length === 0) { alert('ไม่พบข้อมูลในช่วงเวลาที่เลือกเพื่อออกรายงานครับ'); return; }
+
+            let chronologicalRecords = [...sortedRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const headers = ['วัน เดือน ปี', 'รายการ', 'รายรับ (บาท)', 'รายจ่าย (บาท)', 'คงเหลือ (บาท)', 'หมายเหตุ'];
+            const dataRows = [];
+            
+            let currentBalance = 0;
+            let lastRenderedDate = "";
+            let sumIncome = 0;   
+            let sumExpense = 0;  
+
+            const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+            chronologicalRecords.forEach((t) => {
+                const isIncome = t.type === 'income';
+                if (isIncome) {
+                    currentBalance += t.amount;
+                    sumIncome += t.amount;
+                } else {
+                    currentBalance -= t.amount;
+                    sumExpense += t.amount;
+                }
+
+                let dateDisplay = "";
+                const dateObj = new Date(t.date);
+                
+                const day = dateObj.getDate();
+                const monthText = thaiShortMonths[dateObj.getMonth()];
+                const thaiYearLong = dateObj.getFullYear() + 543; 
+                
+                const formattedDate = `${day} ${monthText} ${thaiYearLong}`;
+                
+                if (formattedDate !== lastRenderedDate) {
+                    dateDisplay = formattedDate;
+                    lastRenderedDate = formattedDate;
+                }
+
+                dataRows.push([
+                    dateDisplay,
+                    t.description,
+                    isIncome ? t.amount : "",
+                    !isIncome ? t.amount : "",
+                    currentBalance,
+                    t.notes || "-"
+                ]);
+            });
+
+            const emptyRowIndex = dataRows.length; 
+            const summaryStartRowIndex = emptyRowIndex + 1; 
+
+            dataRows.push(["", "", "", "", "", ""]); 
+            dataRows.push(['สรุปยอดงวดนี้', 'รวมรายรับทั้งหมด', sumIncome, "", "", ""]);
+            dataRows.push(["", 'รวมรายจ่ายทั้งหมด', "", sumExpense, "", ""]);
+            dataRows.push(["", 'ยอดดุลคงเหลือสุทธิ (รายได้สุทธิ)', "", "", sumIncome - sumExpense, (sumIncome - sumExpense >= 0) ? 'งวดนี้มีกำไร' : 'งวดนี้ขาดทุน']);
+
+            const allContentRows = [headers, ...dataRows];
+            const worksheet = XLSX.utils.aoa_to_sheet(allContentRows);
+
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell_address = XLSX.utils.encode_cell({c:C, r:R});
+                    if (!worksheet[cell_address]) continue;
+
+                    worksheet[cell_address].s = {
+                        font: { name: "Aptos", size: 16, bold: false }
+                    };
+
+                    if (R === 0) {
+                        worksheet[cell_address].s.font.bold = true;
+                        worksheet[cell_address].s.fill = {
+                            fgColor: { rgb: "F3F4F6" }
+                        };
+                    }
+
+                    if (R > summaryStartRowIndex) {
+                        worksheet[cell_address].s.font.bold = true;
+                    }
+
+                    if (R > 0 && (C === 2 || C === 3 || C === 4)) {
+                        const cellValue = worksheet[cell_address].v;
+                        if (typeof cellValue === 'number') {
+                            worksheet[cell_address].z = '#,##0.00'; 
+                        }
+                    }
+                }
+            }
+
+            worksheet['!cols'] = [
+                { wch: 18 }, { wch: 40 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 35 }
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "สมุดเงินสด");
+            XLSX.writeFile(workbook, `สมุดเงินสดร้านสระผม_${start}_ถึง_${end}.xlsx`);
+        });
+
+        const options = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' };
+        const todayThai = new Intl.DateTimeFormat('en-CA', options).format(new Date());
+        document.getElementById('date').value = todayThai;
+    </script>
+</body>
+</html>

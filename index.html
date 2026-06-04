@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบัญชี ร้านสระผม v0.13 (Inline Excel Button & Column Rename)</title>
+    <title>ระบบบัญชี ร้านสระผม v0.14 (Perfect Inline Excel Button & Top Navbar)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -32,7 +32,7 @@
                 <span class="text-2xl">💇‍♀️</span>
                 <div>
                     <h2 class="font-bold text-sm sm:text-base tracking-wide">Salon Accounting</h2>
-                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.13</p>
+                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.14</p>
                 </div>
             </div>
             
@@ -129,17 +129,17 @@
             </div>
 
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 lg:col-span-2">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-100 mb-6 gap-4 bg-gray-50 p-4 rounded-lg">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between pb-4 border-b border-gray-100 mb-6 gap-4 bg-gray-50 p-4 rounded-xl">
                     <div>
                         <h3 class="text-md font-semibold text-gray-700">เรียกดูข้อมูลตามช่วงเวลา</h3>
-                        <p class="text-xs text-gray-500 mt-0.5">*ระบบจะกรองตั้งแต่วันต้นปีจนถึงวันที่ปัจจุบันให้อัตโนมัติ</p>
+                        <p class="text-xs text-gray-500 mt-0.5">*ระบบจะกรองตั้งแต่วันต้นปีให้อัตโนมัติ</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-sm">
-                        <input type="date" id="filter-start" class="p-1.5 border border-gray-300 rounded-md bg-white">
+                        <input type="date" id="filter-start" class="p-1.5 border border-gray-300 rounded-md bg-white w-[135px] sm:w-auto">
                         <span class="text-gray-500">ถึง</span>
-                        <input type="date" id="filter-end" class="p-1.5 border border-gray-300 rounded-md bg-white">
-                        <button id="btn-clear-date" class="bg-gray-200 text-gray-700 px-2 py-1.5 rounded-md text-xs font-medium hover:bg-gray-300 transition cursor-pointer">ล้างค่า</button>
-                        <button id="btn-export" class="bg-emerald-600 text-white px-3 py-1.5 rounded-md font-medium hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer">
+                        <input type="date" id="filter-end" class="p-1.5 border border-gray-300 rounded-md bg-white w-[135px] sm:w-auto">
+                        <button id="btn-clear-date" class="bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-md text-xs font-medium hover:bg-gray-300 transition cursor-pointer shrink-0">ล้างค่า</button>
+                        <button id="btn-export" class="bg-emerald-600 text-white px-3 py-1.5 rounded-md font-medium hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer shrink-0 shadow-xs">
                             📊 Excel
                         </button>
                     </div>

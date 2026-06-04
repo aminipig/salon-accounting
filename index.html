@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบัญชี ร้านสระผม v0.14 (Perfect Inline Excel Button & Top Navbar)</title>
+    <title>ระบบบัญชี ร้านสระผม v0.15 (Payment Method For Both Income & Expense)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </head>
 <body class="bg-gray-50 font-sans antialiased text-gray-800">
 
+    <!-- 1. หน้าจอสำหรับล็อกอิน (Login Screen) -->
     <div id="login-screen" class="flex flex-col items-center justify-center h-screen bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-gray-100 transform transition-all">
             <div class="text-4xl mb-3">💇‍♀️</div>
@@ -26,13 +27,14 @@
         </div>
     </div>
 
+    <!-- 2. แถบข้อมูลล็อกอินด้านบน (Top Navbar) -->
     <header id="top-navbar" class="bg-gray-900 text-white shadow-md sticky top-0 z-50 hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <span class="text-2xl">💇‍♀️</span>
                 <div>
                     <h2 class="font-bold text-sm sm:text-base tracking-wide">Salon Accounting</h2>
-                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.14</p>
+                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.15</p>
                 </div>
             </div>
             
@@ -52,9 +54,11 @@
         </div>
     </header>
 
+    <!-- 3. พื้นที่แสดงเนื้อหาแอปพลิเคชันหลัก -->
     <main id="main-app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">ระบบบัญชีรายรับ-รายจ่าย ร้านสระผม 💇‍♀️</h1>
 
+        <!-- Dashboard Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-green-50 p-6 rounded-2xl border border-green-200 shadow-xs">
                 <p class="text-sm font-medium text-green-600">รายรับรวม (ปี <span class="view-year"></span>)</p>
@@ -70,6 +74,7 @@
             </div>
         </div>
 
+        <!-- Chart Section -->
         <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
                 <h3 class="text-lg font-semibold">กราฟสรุปรายเดือนประจำปี <span id="current-year"></span></h3>
@@ -85,6 +90,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Form Section -->
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
                 <h3 class="text-lg font-semibold mb-4" id="form-title">บันทึกรายการใหม่</h3>
                 <form id="finance-form" class="space-y-4">
@@ -101,8 +107,9 @@
                             <option value="expense">รายจ่าย (ซื้อของ/ค่าน้ำไฟ/ค่าแรง)</option>
                         </select>
                     </div>
+                    <!-- 🌟 ปรับปรุง: เปลี่ยนชื่อเป็นช่องทางการชำระเงิน และเปิดให้แสดงผลตลอดเวลาไม่ว่าจะเลือกรายรับหรือรายจ่ายครับ -->
                     <div id="payment-method-container">
-                        <label class="block text-sm font-medium text-gray-700">ช่องทางการรับเงิน</label>
+                        <label class="block text-sm font-medium text-gray-700">ช่องทางการชำระเงิน</label>
                         <select id="payment-method" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs bg-white font-medium">
                             <option value="เงินโอน">💰 เงินโอน</option>
                             <option value="เงินสด">💵 เงินสด</option>
@@ -128,12 +135,14 @@
                 </form>
             </div>
 
+            <!-- Table Section -->
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 lg:col-span-2">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between pb-4 border-b border-gray-100 mb-6 gap-4 bg-gray-50 p-4 rounded-xl">
                     <div>
                         <h3 class="text-md font-semibold text-gray-700">เรียกดูข้อมูลตามช่วงเวลา</h3>
                         <p class="text-xs text-gray-500 mt-0.5">*ระบบจะกรองตั้งแต่วันต้นปีให้อัตโนมัติ</p>
                     </div>
+                    <!-- ปุ่ม Excel ล็อกพิกัดขวาสุดตามกรอบสีแดงของรูปเวอร์ชันก่อนหน้า ยึดโครงสร้างกริดสมบูรณ์แบบครับ 🌟 -->
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <input type="date" id="filter-start" class="p-1.5 border border-gray-300 rounded-md bg-white w-[135px] sm:w-auto">
                         <span class="text-gray-500">ถึง</span>
@@ -182,7 +191,8 @@
                                 <th class="p-3 cursor-pointer hover:bg-gray-100" id="th-date">วันที่ <span id="sort-icon-date">🔽</span></th>
                                 <th class="p-3">รายการ</th>
                                 <th class="p-3">ประเภท</th>
-                                <th class="p-3 text-center">ช่องทางรับเงิน</th>
+                                <!-- 🌟 เปลี่ยนชื่อหัวคอลัมน์ครอบคลุมเป็น "ช่องทางชำระเงิน" รองรับทั้งรายรับและรายจ่ายครับ -->
+                                <th class="p-3 text-center">ช่องทางชำระเงิน</th>
                                 <th class="p-3 text-right cursor-pointer hover:bg-gray-100" id="th-amount">จำนวนเงิน <span id="sort-icon-amount" class="text-gray-400"></span></th>
                                 <th class="p-3 text-center w-24">จัดการ</th>
                             </tr>
@@ -202,6 +212,7 @@
         </div>
     </main>
 
+    <!-- Firebase Script โมดูลการล็อกอิน Google Auth -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -240,15 +251,6 @@
         let sortedRecords = [];
         let currentSortKey = 'date'; 
         let currentSortDirection = 'desc'; 
-
-        document.getElementById('type').addEventListener('change', function(e) {
-            const container = document.getElementById('payment-method-container');
-            if (e.target.value === 'income') {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
-        });
 
         // --- ระบบตรวจสอบสถานะล็อกอิน Google ---
         onAuthStateChanged(auth, async (user) => {
@@ -474,8 +476,9 @@
             displayRecords.forEach((t, index) => {
                 const rowNumber = startIndex + index + 1; 
                 
+                // 🌟 ปรับปรุง: ดึงข้อมูลช่องทางเงินมาแสดงเป็นป้ายสี ทั้งฝั่งรายรับ และฝั่งรายจ่ายตามสั่งเลยครับ
                 let paymentMethodBadge = `<span class="text-gray-400 font-mono">-</span>`;
-                if (t.type === 'income' && t.paymentMethod) {
+                if (t.paymentMethod) {
                     if (t.paymentMethod === 'เงินโอน') {
                         paymentMethodBadge = `<span class="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md shadow-3xs">💰 ${t.paymentMethod}</span>`;
                     } else if (t.paymentMethod === 'เงินสด') {
@@ -529,13 +532,8 @@
             document.getElementById('amount').value = item.amount;
             document.getElementById('notes').value = item.notes || ""; 
             
-            const methodContainer = document.getElementById('payment-method-container');
-            if (item.type === 'income') {
-                methodContainer.classList.remove('hidden');
-                document.getElementById('payment-method').value = item.paymentMethod || "เงินโอน";
-            } else {
-                methodContainer.classList.add('hidden');
-            }
+            // ปลดล็อกให้แสดงฟิลด์ประเภทเงิน และดึงค่ามาวางได้เสมอ 🌟
+            document.getElementById('payment-method').value = item.paymentMethod || "เงินโอน";
 
             document.getElementById('form-title').innerText = "📝 แก้ไขรายการข้อมูล";
             document.getElementById('btn-submit').innerText = "อัปเดตข้อมูล";
@@ -554,7 +552,6 @@
             document.getElementById('notes').value = ''; 
             document.getElementById('type').value = 'income'; 
             document.getElementById('payment-method').value = 'เงินโอน'; 
-            document.getElementById('payment-method-container').classList.remove('hidden');
             document.getElementById('date').value = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
         }
 
@@ -604,29 +601,23 @@
             const editId = document.getElementById('edit-id').value;
             const itemType = document.getElementById('type').value;
             
+            // บันทึกฟิลด์ paymentMethod ลงโครงสร้างหลักสำหรับทุกประเภทรายการ 🌟
             const payload = {
                 date: document.getElementById('date').value,
                 type: itemType,
                 description: document.getElementById('description').value,
                 amount: parseFloat(document.getElementById('amount').value),
-                notes: document.getElementById('notes').value 
+                notes: document.getElementById('notes').value,
+                paymentMethod: document.getElementById('payment-method').value
             };
-            
-            if (itemType === 'income') {
-                payload.paymentMethod = document.getElementById('payment-method').value;
-            }
 
             try {
                 if (editId) {
                     await updateDoc(doc(db, "salon_records", editId), payload);
-                    let logText = `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ.`;
-                    if(payload.paymentMethod) logText += ` (${payload.paymentMethod})`;
-                    await writeActivityLog("แก้ไขรายการ", logText);
+                    await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
                 } else {
                     await addDoc(recordsCollection, payload);
-                    let logText = `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ.`;
-                    if(payload.paymentMethod) logText += ` (${payload.paymentMethod})`;
-                    await writeActivityLog("สร้างรายการใหม่", logText);
+                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
                 }
                 window.resetFormMode();
             } catch (error) { alert("บันทึกข้อมูลล้มเหลว: " + error.message); }
@@ -640,7 +631,7 @@
 
             let chronologicalRecords = [...sortedRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
             
-            const headers = ['วัน เดือน ปี', 'รายการ', 'ช่องทางรับเงิน', 'รายรับ (บาท)', 'รายจ่าย (บาท)', 'คงเหลือ (บาท)', 'หมายเหตุ'];
+            const headers = ['วัน เดือน ปี', 'รายการ', 'ช่องทางชำระเงิน', 'รายรับ (บาท)', 'รายจ่าย (บาท)', 'คงเหลือ (บาท)', 'หมายเหตุ'];
             const dataRows = [];
             let currentBalance = 0, sumIncome = 0, sumExpense = 0;
             const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -654,7 +645,8 @@
                 const dateObj = new Date(t.date);
                 const formattedDate = `${dateObj.getDate()} ${thaiShortMonths[dateObj.getMonth()]} ${dateObj.getFullYear() + 543}`;
                 
-                const methodStr = isIncome ? (t.paymentMethod || "เงินโอน") : "-";
+                // ดึงข้อมูลช่องทางชำระเงินออกรายงาน Excel ทั้งฝั่งบวกและฝั่งลบ 🌟
+                const methodStr = t.paymentMethod || "เงินโอน";
                 
                 dataRows.push([formattedDate, t.description, methodStr, isIncome ? t.amount : "", !isIncome ? t.amount : "", currentBalance, t.notes || "-"]);
                 exportedItemsSummary.push(`[${t.date}] ${t.description} (${methodStr}) (${isIncome?'รายรับ':'รายจ่าย'}: ${t.amount} บ.)`);

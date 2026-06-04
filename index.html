@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบัญชี ร้านสระผม v0.06 (Export Data Logs & Top Navbar)</title>
+    <title>ระบบบัญชี ร้านสระผม v0.07 (ISO Datetime Logs & Top Navbar)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -34,7 +34,7 @@
                 <span class="text-2xl">💇‍♀️</span>
                 <div>
                     <h2 class="font-bold text-sm sm:text-base tracking-wide">Salon Accounting</h2>
-                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.06</p>
+                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.07</p>
                 </div>
             </div>
             
@@ -204,7 +204,7 @@
     <!-- Firebase Script โมดูลการล็อกอิน Google Auth -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -333,16 +333,44 @@
             return Number(amount).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        // ฟังก์ชันสร้างข้อความ DateTime ในรูปแบบ ค.ศ. (YYYY-MM-DD HH:mm:ss) ของเขตเวลาไทย
+        function getThaiZoneISOString() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Bangkok',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            
+            // ใช้ en-US หรือ en-GB โลแคลเพื่อบังคับให้เอาปี ค.ศ. (เช่น 2026) แน่นอน ไม่เป็น พ.ศ.
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const parts = formatter.formatToParts(now);
+            
+            // ดึงค่าแต่ละชิ้นส่วนออกมาประกอบร่างใหม่เป็น YYYY-MM-DD HH:mm:ss
+            const map = {};
+            parts.forEach(p => map[p.type] = p.value);
+            
+            return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second}`;
+        }
+
         async function writeActivityLog(actionType, details) {
             try {
                 const currentUser = auth.currentUser ? auth.currentUser.displayName : "Unknown User";
                 const currentEmail = auth.currentUser ? auth.currentUser.email : "Unknown Email"; 
+                const datetimeString = getThaiZoneISOString(); // ได้ค่าเป็น ค.ศ. เช่น "2026-06-04 17:34:21"
+                
                 await addDoc(logCollection, {
                     user: currentUser, 
                     user_email: currentEmail, 
                     action: actionType,
                     details: details,
-                    timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) 
+                    timestamp: datetimeString, // บันทึกเป็นข้อความ Datetime ปี ค.ศ. เช็คง่ายในหน้าคอนโซล
+                    createdAt: serverTimestamp() // แถมตัวแปรคัดแยกเวลาฝั่งเซิร์ฟเวอร์ไว้สำหรับจัดเรียง
                 });
             } catch (e) {
                 console.error("ไม่สามารถเขียน Log ได้: ", e);

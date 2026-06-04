@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบัญชี ร้านสระผม v0.03 (Top Navbar & Google Login)</title>
+    <title>ระบบบัญชี ร้านสระผม v0.04 (Log Name & Email & Top Navbar)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -32,16 +32,16 @@
                 <span class="text-2xl">💇‍♀️</span>
                 <div>
                     <h2 class="font-bold text-sm sm:text-base tracking-wide">Salon Accounting</h2>
-                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.03</p>
+                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.04</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-4 sm:gap-6">
                 <div class="flex items-center gap-2.5 border-r border-gray-800 pr-4 sm:pr-6">
                     <img id="user-avatar" src="" alt="Avatar" class="w-9 h-9 rounded-full border-2 border-indigo-400 bg-gray-700 shrink-0 shadow-xs">
-                    <div class="hidden sm:block overflow-hidden max-w-[120px]">
-                        <p class="text-[10px] text-gray-400">ผู้ใช้งานปัจจุบัน</p>
+                    <div class="hidden sm:block overflow-hidden max-w-[150px]">
                         <p id="user-name" class="text-xs font-semibold text-gray-100 truncate">กำลังโหลด...</p>
+                        <p id="user-email" class="text-[9px] text-gray-400 truncate -mt-0.5">กำลังโหลด...</p>
                     </div>
                 </div>
                 
@@ -147,7 +147,7 @@
                         </div>
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-1.5">
-                                    <label for="type-filter" class="text-gray-600">ประเภท:</label>
+                                <label for="type-filter" class="text-gray-600">ประเภท:</label>
                                 <select id="type-filter" class="p-1 border border-gray-300 rounded-md bg-white font-medium">
                                     <option value="all">ทั้งหมด</option>
                                     <option value="income">รายรับ</option>
@@ -232,20 +232,21 @@
         let currentSortKey = 'date'; 
         let currentSortDirection = 'desc'; 
 
-        // --- ระบบตรวจสอบสถานะล็อกอิน Google (ปรับปรุงแสดงแถบด้านบน) ---
+        // --- ระบบตรวจสอบสถานะล็อกอิน Google ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('top-navbar').classList.remove('hidden'); // แสดงแถบบน 🌟
+                document.getElementById('top-navbar').classList.remove('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
 
                 document.getElementById('user-avatar').src = user.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
                 document.getElementById('user-name').innerText = user.displayName || "ผู้ใช้ระบบ";
+                document.getElementById('user-email').innerText = user.email || "-"; // แสดง Email บนแถบ Navbar 🌟
 
                 startSyncData();
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('top-navbar').classList.add('hidden'); // ซ่อนแถบบน 🌟
+                document.getElementById('top-navbar').classList.add('hidden');
                 document.getElementById('main-app').classList.add('hidden');
 
                 if (unsubscribeRealtime) {
@@ -315,11 +316,14 @@
             return Number(amount).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        // 🌟 ปรับปรุงใหม่: บันทึกทั้งชื่อจริง (user) และอีเมล (user_email) ลงไปในฐานข้อมูล Cloud Log พร้อมกัน
         async function writeActivityLog(actionType, details) {
             try {
                 const currentUser = auth.currentUser ? auth.currentUser.displayName : "Unknown User";
+                const currentEmail = auth.currentUser ? auth.currentUser.email : "Unknown Email"; // ดึงข้อมูลอีเมลจาก Google 🌟
                 await addDoc(logCollection, {
                     user: currentUser, 
+                    user_email: currentEmail, // ฟิลด์ใหม่ใช้บันทึก e-mail ของผู้ใช้งานเครื่องนั้น ๆ ครับ 🌟
                     action: actionType,
                     details: details,
                     timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) 

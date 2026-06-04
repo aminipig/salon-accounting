@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบัญชี ร้านสระผม v0.02 (Google Login & Cloud Real-time)</title>
+    <title>ระบบบัญชี ร้านสระผม v0.03 (Top Navbar & Google Login)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -20,180 +20,179 @@
                 <svg class="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.29 1.157 15.485 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.789-.085-1.39-.188-1.945H12.24z"/>
                 </svg>
-                ลงชื่อเข้าใช้ด้วย Google Acccount
+                ลงชื่อเข้าใช้ด้วย Google Account
             </button>
             <p class="text-xs text-gray-400 mt-6">ระบบความปลอดภัยขับเคลื่อนโดย Firebase Auth</p>
         </div>
     </div>
 
-    <div id="main-app" class="flex h-screen overflow-hidden hidden">
-        
-        <div class="w-64 bg-gray-900 text-white flex flex-col justify-between p-6 shrink-0">
-            <div class="space-y-6">
-                <div class="flex items-center gap-2 border-b border-gray-800 pb-4">
-                    <span class="text-2xl">💇‍♀️</span>
-                    <div>
-                        <h2 class="font-bold text-sm">Salon Accounting</h2>
-                        <p class="text-xs text-emerald-400 font-mono">version 0.02</p>
-                    </div>
-                </div>
-
-                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-800 flex items-center gap-3">
-                    <img id="user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-indigo-400 bg-gray-700 shrink-0">
-                    <div class="overflow-hidden">
-                        <p class="text-xs text-gray-400">ผู้ใช้งานปัจจุบัน</p>
-                        <p id="user-name" class="text-sm font-semibold text-gray-100 truncate">กำลังโหลด...</p>
-                    </div>
+    <header id="top-navbar" class="bg-gray-900 text-white shadow-md sticky top-0 z-50 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl">💇‍♀️</span>
+                <div>
+                    <h2 class="font-bold text-sm sm:text-base tracking-wide">Salon Accounting</h2>
+                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.03</p>
                 </div>
             </div>
+            
+            <div class="flex items-center gap-4 sm:gap-6">
+                <div class="flex items-center gap-2.5 border-r border-gray-800 pr-4 sm:pr-6">
+                    <img id="user-avatar" src="" alt="Avatar" class="w-9 h-9 rounded-full border-2 border-indigo-400 bg-gray-700 shrink-0 shadow-xs">
+                    <div class="hidden sm:block overflow-hidden max-w-[120px]">
+                        <p class="text-[10px] text-gray-400">ผู้ใช้งานปัจจุบัน</p>
+                        <p id="user-name" class="text-xs font-semibold text-gray-100 truncate">กำลังโหลด...</p>
+                    </div>
+                </div>
+                
+                <button id="btn-logout" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 border border-red-500/30 hover:border-transparent cursor-pointer">
+                    🚪 ออกระบบ
+                </button>
+            </div>
+        </div>
+    </header>
 
-            <button id="btn-logout" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white p-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-2 border border-red-500/30 hover:border-transparent cursor-pointer">
-                🚪 ออกจากระบบ (Logout)
-            </button>
+    <main id="main-app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">ระบบบัญชีรายรับ-รายจ่าย ร้านสระผม 💇‍♀️</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-green-50 p-6 rounded-2xl border border-green-200 shadow-xs">
+                <p class="text-sm font-medium text-green-600">รายรับรวม (ปี <span class="view-year"></span>)</p>
+                <p class="text-3xl font-bold text-green-700 mt-2">฿<span id="total-income">0.00</span></p>
+            </div>
+            <div class="bg-red-50 p-6 rounded-2xl border border-red-200 shadow-xs">
+                <p class="text-sm font-medium text-red-600">รายจ่ายรวม (ปี <span class="view-year"></span>)</p>
+                <p class="text-3xl font-bold text-red-700 mt-2">฿<span id="total-expense">0.00</span></p>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-xs">
+                <p class="text-sm font-medium text-blue-600">กำไรสุทธิ (ปี <span class="view-year"></span>)</p>
+                <p class="text-3xl font-bold text-blue-700 mt-2">฿<span id="net-profit">0.00</span></p>
+            </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-8">ระบบบัญชีรายรับ-รายจ่าย ร้านสระผม 💇‍♀️</h1>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-green-50 p-6 rounded-2xl border border-green-200 shadow-xs">
-                    <p class="text-sm font-medium text-green-600">รายรับรวม (ปี <span class="view-year"></span>)</p>
-                    <p class="text-3xl font-bold text-green-700 mt-2">฿<span id="total-income">0.00</span></p>
-                </div>
-                <div class="bg-red-50 p-6 rounded-2xl border border-red-200 shadow-xs">
-                    <p class="text-sm font-medium text-red-600">รายจ่ายรวม (ปี <span class="view-year"></span>)</p>
-                    <p class="text-3xl font-bold text-red-700 mt-2">฿<span id="total-expense">0.00</span></p>
-                </div>
-                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-xs">
-                    <p class="text-sm font-medium text-blue-600">กำไรสุทธิ (ปี <span class="view-year"></span>)</p>
-                    <p class="text-3xl font-bold text-blue-700 mt-2">฿<span id="net-profit">0.00</span></p>
+        <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                <h3 class="text-lg font-semibold">กราฟสรุปรายเดือนประจำปี <span id="current-year"></span></h3>
+                <div class="flex items-center gap-2 text-sm">
+                    <label for="year-filter" class="font-medium text-gray-600">เลือกปีที่ต้องการดู:</label>
+                    <select id="year-filter" class="p-1.5 border border-gray-300 rounded-md bg-white font-medium shadow-xs">
+                    </select>
                 </div>
             </div>
+            <div class="h-64">
+                <canvas id="financeChart"></canvas>
+            </div>
+        </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 mb-8">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-                    <h3 class="text-lg font-semibold">กราฟสรุปรายเดือนประจำปี <span id="current-year"></span></h3>
-                    <div class="flex items-center gap-2 text-sm">
-                        <label for="year-filter" class="font-medium text-gray-600">เลือกปีที่ต้องการดู:</label>
-                        <select id="year-filter" class="p-1.5 border border-gray-300 rounded-md bg-white font-medium shadow-xs">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
+                <h3 class="text-lg font-semibold mb-4" id="form-title">บันทึกรายการใหม่</h3>
+                <form id="finance-form" class="space-y-4">
+                    <input type="hidden" id="edit-id" value="">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">วันที่</label>
+                        <input type="date" id="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ประเภท</label>
+                        <select id="type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                            <option value="income">รายรับ (ค่าบริการ/ขายของ)</option>
+                            <option value="expense">รายจ่าย (ซื้อของ/ค่าน้ำไฟ/ค่าแรง)</option>
                         </select>
                     </div>
-                </div>
-                <div class="h-64">
-                    <canvas id="financeChart"></canvas>
-                </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">รายละเอียดรายการ</label>
+                        <input type="text" id="description" placeholder="เช่น สระ-ไดร์ ลูกค้า VIP" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
+                        <input type="number" id="amount" placeholder="0.00" min="0" step="0.01" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">หมายเหตุ (ถ้ามี)</label>
+                        <input type="text" id="notes" placeholder="เช่น โอนเงินเข้าบัญชีธนาคารกสิกร" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button type="submit" id="btn-submit" class="w-full bg-indigo-600 text-white p-2 rounded-md font-medium hover:bg-indigo-700 transition cursor-pointer">บันทึกข้อมูล</button>
+                        <button type="button" id="btn-cancel-edit" class="w-full bg-gray-200 text-gray-700 p-2 rounded-md font-medium hover:bg-gray-300 transition hidden cursor-pointer">ยกเลิกการแก้ไข</button>
+                    </div>
+                </form>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
-                    <h3 class="text-lg font-semibold mb-4" id="form-title">บันทึกรายการใหม่</h3>
-                    <form id="finance-form" class="space-y-4">
-                        <input type="hidden" id="edit-id" value="">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                            <input type="date" id="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ประเภท</label>
-                            <select id="type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
-                                <option value="income">รายรับ (ค่าบริการ/ขายของ)</option>
-                                <option value="expense">รายจ่าย (ซื้อของ/ค่าน้ำไฟ/ค่าแรง)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">รายละเอียดรายการ</label>
-                            <input type="text" id="description" placeholder="เช่น สระ-ไดร์ ลูกค้า VIP" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
-                            <input type="number" id="amount" placeholder="0.00" min="0" step="0.01" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">หมายเหตุ (ถ้ามี)</label>
-                            <input type="text" id="notes" placeholder="เช่น โอนเงินเข้าบัญชีธนาคารกสิกร" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs">
-                        </div>
-                        
-                        <div class="flex flex-col gap-2">
-                            <button type="submit" id="btn-submit" class="w-full bg-indigo-600 text-white p-2 rounded-md font-medium hover:bg-indigo-700 transition cursor-pointer">บันทึกข้อมูล</button>
-                            <button type="button" id="btn-cancel-edit" class="w-full bg-gray-200 text-gray-700 p-2 rounded-md font-medium hover:bg-gray-300 transition hidden cursor-pointer">ยกเลิกการแก้ไข</button>
-                        </div>
-                    </form>
+            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 lg:col-span-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-100 mb-6 gap-4 bg-gray-50 p-4 rounded-lg">
+                    <div>
+                        <h3 class="text-md font-semibold text-gray-700">เรียกดูข้อมูลตามช่วงเวลา</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">*ระบบจะกรองตั้งแต่วันต้นปีจนถึงวันที่ปัจจุบันให้อัตโนมัติ</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                        <input type="date" id="filter-start" class="p-1.5 border border-gray-300 rounded-md bg-white">
+                        <span class="text-gray-500">ถึง</span>
+                        <input type="date" id="filter-end" class="p-1.5 border border-gray-300 rounded-md bg-white">
+                        <button id="btn-clear-date" class="bg-gray-200 text-gray-700 px-2 py-1.5 rounded-md text-xs font-medium hover:bg-gray-300 transition cursor-pointer">ล้างค่า</button>
+                        <button id="btn-export" class="bg-emerald-600 text-white px-3 py-1.5 rounded-md font-medium hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer">
+                            📊 Export Excel ฟอร์มบัญชี
+                        </button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 lg:col-span-2">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-100 mb-6 gap-4 bg-gray-50 p-4 rounded-lg">
-                        <div>
-                            <h3 class="text-md font-semibold text-gray-700">เรียกดูข้อมูลตามช่วงเวลา</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">*ระบบจะกรองตั้งแต่วันต้นปีจนถึงวันที่ปัจจุบันให้อัตโนมัติ</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                    <h3 class="text-lg font-semibold">ประวัติรายการในตาราง</h3>
+                    <div class="flex flex-wrap items-center gap-4 text-sm w-full sm:w-auto justify-between sm:justify-end">
+                        <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                            <label for="search-input" class="text-gray-600 shrink-0 font-medium">ค้นหา:</label>
+                            <input type="text" id="search-input" placeholder="พิมพ์คำค้นหา..." class="p-1 border border-gray-300 rounded-md bg-white w-full sm:w-44 focus:outline-hidden">
                         </div>
-                        <div class="flex flex-wrap items-center gap-2 text-sm">
-                            <input type="date" id="filter-start" class="p-1.5 border border-gray-300 rounded-md bg-white">
-                            <span class="text-gray-500">ถึง</span>
-                            <input type="date" id="filter-end" class="p-1.5 border border-gray-300 rounded-md bg-white">
-                            <button id="btn-clear-date" class="bg-gray-200 text-gray-700 px-2 py-1.5 rounded-md text-xs font-medium hover:bg-gray-300 transition cursor-pointer">ล้างค่า</button>
-                            <button id="btn-export" class="bg-emerald-600 text-white px-3 py-1.5 rounded-md font-medium hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer">
-                                📊 Export Excel ฟอร์มบัญชี
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                        <h3 class="text-lg font-semibold">ประวัติรายการในตาราง</h3>
-                        <div class="flex flex-wrap items-center gap-4 text-sm w-full sm:w-auto justify-between sm:justify-end">
-                            <div class="flex items-center gap-1.5 w-full sm:w-auto">
-                                <label for="search-input" class="text-gray-600 shrink-0 font-medium">ค้นหา:</label>
-                                <input type="text" id="search-input" placeholder="พิมพ์คำค้นหา..." class="p-1 border border-gray-300 rounded-md bg-white w-full sm:w-44 focus:outline-hidden">
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-1.5">
                                     <label for="type-filter" class="text-gray-600">ประเภท:</label>
-                                    <select id="type-filter" class="p-1 border border-gray-300 rounded-md bg-white font-medium">
-                                        <option value="all">ทั้งหมด</option>
-                                        <option value="income">รายรับ</option>
-                                        <option value="expense">รายจ่าย</option>
-                                    </select>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <label for="per-page" class="text-gray-600">แสดง:</label>
-                                    <select id="per-page" class="p-1 border border-gray-300 rounded-md bg-white">
-                                        <option value="10">10</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                        <option value="all">ทั้งหมด</option>
-                                    </select>
-                                </div>
+                                <select id="type-filter" class="p-1 border border-gray-300 rounded-md bg-white font-medium">
+                                    <option value="all">ทั้งหมด</option>
+                                    <option value="income">รายรับ</option>
+                                    <option value="expense">รายจ่าย</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <label for="per-page" class="text-gray-600">แสดง:</label>
+                                <select id="per-page" class="p-1 border border-gray-300 rounded-md bg-white">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="all">ทั้งหมด</option>
+                                </select>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="overflow-x-auto min-h-[300px]">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-600 text-sm uppercase">
-                                    <th class="p-3 w-12">ลำดับ</th>
-                                    <th class="p-3 cursor-pointer hover:bg-gray-100" id="th-date">วันที่ <span id="sort-icon-date">🔽</span></th>
-                                    <th class="p-3">รายการ</th>
-                                    <th class="p-3">ประเภท</th>
-                                    <th class="p-3 text-right cursor-pointer hover:bg-gray-100" id="th-amount">จำนวนเงิน <span id="sort-icon-amount" class="text-gray-400"></span></th>
-                                    <th class="p-3 text-center w-24">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transaction-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
-                        </table>
-                    </div>
+                <div class="overflow-x-auto min-h-[300px]">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-sm uppercase">
+                                <th class="p-3 w-12">ลำดับ</th>
+                                <th class="p-3 cursor-pointer hover:bg-gray-100" id="th-date">วันที่ <span id="sort-icon-date">🔽</span></th>
+                                <th class="p-3">รายการ</th>
+                                <th class="p-3">ประเภท</th>
+                                <th class="p-3 text-right cursor-pointer hover:bg-gray-100" id="th-amount">จำนวนเงิน <span id="sort-icon-amount" class="text-gray-400"></span></th>
+                                <th class="p-3 text-center w-24">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+                    </table>
+                </div>
 
-                    <div class="flex items-center justify-between mt-4 text-sm border-t border-gray-100 pt-4">
-                        <span id="page-info" class="text-gray-600 font-medium">กำลังโหลด...</span>
-                        <div class="flex gap-2">
-                            <button id="btn-prev" class="px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-40 transition cursor-pointer">< ก่อนหน้า</button>
-                            <button id="btn-next" class="px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-40 transition cursor-pointer">ถัดไป ></button>
-                        </div>
+                <div class="flex items-center justify-between mt-4 text-sm border-t border-gray-100 pt-4">
+                    <span id="page-info" class="text-gray-600 font-medium">กำลังโหลด...</span>
+                    <div class="flex gap-2">
+                        <button id="btn-prev" class="px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-40 transition cursor-pointer">< ก่อนหน้า</button>
+                        <button id="btn-next" class="px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-40 transition cursor-pointer">ถัดไป ></button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -221,7 +220,7 @@
         let selectedYear = new Date().getFullYear();
         let financeChart;
         let isFirstLoad = true; 
-        let unsubscribeRealtime = null; // เก็บฟังก์ชันสำหรับเปิด/ปิดการซิงค์ข้อมูลคลาวด์
+        let unsubscribeRealtime = null; 
         
         let currentPage = 1;
         let itemsPerPage = 10;
@@ -233,25 +232,22 @@
         let currentSortKey = 'date'; 
         let currentSortDirection = 'desc'; 
 
-        // --- ระบบตรวจสอบสถานะล็อกอิน Google (Authentication State) ---
+        // --- ระบบตรวจสอบสถานะล็อกอิน Google (ปรับปรุงแสดงแถบด้านบน) ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // เคสที่ 1: ล็อกอินสำเร็จแล้ว -> เปิดหน้าจอระบบบัญชี, ซ่อนหน้าจอล็อกอิน
                 document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('top-navbar').classList.remove('hidden'); // แสดงแถบบน 🌟
                 document.getElementById('main-app').classList.remove('hidden');
 
-                // นำรูปและชื่อเล่นจากบัญชี Google มาใส่ในโปรไฟล์สไลด์บาร์
                 document.getElementById('user-avatar').src = user.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
                 document.getElementById('user-name').innerText = user.displayName || "ผู้ใช้ระบบ";
 
-                // เริ่มทำการซิงค์ฐานข้อมูลจาก Firestore คลาวด์
                 startSyncData();
             } else {
-                // เคสที่ 2: ยังไม่ได้ล็อกอิน หรือกด Logout -> สลับหน้าจอบังคับล็อกอินทันที
                 document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('top-navbar').classList.add('hidden'); // ซ่อนแถบบน 🌟
                 document.getElementById('main-app').classList.add('hidden');
 
-                // หยุดการทำงานสตรีมข้อมูล Cloud เพื่อเซฟความปลอดภัยและทรัพยากร
                 if (unsubscribeRealtime) {
                     unsubscribeRealtime();
                     unsubscribeRealtime = null;
@@ -259,7 +255,6 @@
             }
         });
 
-        // ปุ่มล็อกอินคลิกขวารันป๊อปอัป Google ลงชื่อเข้าใช้
         document.getElementById('btn-login-google').addEventListener('click', async () => {
             try {
                 await signInWithPopup(auth, googleProvider);
@@ -268,19 +263,17 @@
             }
         });
 
-        // ปุ่มกดออกจากระบบ (Logout)
         document.getElementById('btn-logout').addEventListener('click', async () => {
             if (confirm("คุณปิงต้องการออกจากระบบบัญชีใช่ไหมครับ?")) {
                 try {
                     await signOut(auth);
-                    isFirstLoad = true; // รีเซ็ตสถานะหน้าสำหรับรอบถัดไป
+                    isFirstLoad = true; 
                 } catch (error) {
                     alert("ออกจากระบบผิดพลาด: " + error.message);
                 }
             }
         });
 
-        // ฟังก์ชันเริ่มซิงค์ Realtime (ย้ายมาเปิดเฉพาะตอนล็อกอินแล้ว)
         function startSyncData() {
             unsubscribeRealtime = onSnapshot(recordsCollection, (snapshot) => {
                 document.getElementById('page-info').innerText = "🔄 กำลังซิงค์ข้อมูล Cloud...";
@@ -324,7 +317,7 @@
 
         async function writeActivityLog(actionType, details) {
             try {
-                const currentUser = auth.currentUser ? auth.currentUser.displayName : "Test";
+                const currentUser = auth.currentUser ? auth.currentUser.displayName : "Unknown User";
                 await addDoc(logCollection, {
                     user: currentUser, 
                     action: actionType,
@@ -505,7 +498,7 @@
             if (confirm(`คุณปิงแน่ใจนะครับ ว่าต้องการลบรายการ "${item.description}"?`)) {
                 try {
                     await deleteDoc(doc(db, "salon_records", id));
-                    await writeActivityLog("ลบรายการ", `ลบรายการ: "${item.description}" ยอดเงิน ${item.amount.toFixed(2)} บาท`);
+                    await writeActivityLog("ลบรายการ", `ลบรายการ: "${item.description}" ยอด ${item.amount.toFixed(2)} บ.`);
                     if (document.getElementById('edit-id').value === id) { window.resetFormMode(); }
                 } catch (e) { alert("ลบข้อมูลไม่สำเร็จ: " + e.message); }
             }
@@ -533,8 +526,8 @@
         document.getElementById('search-input').addEventListener('input', (e) => { searchQuery = e.target.value; currentPage = 1; applySortAndRender(); });
         document.getElementById('btn-cancel-edit').addEventListener('click', () => window.resetFormMode());
         document.getElementById('type-filter').addEventListener('change', (e) => { selectedTypeFilter = e.target.value; currentPage = 1; applySortAndRender(); });
-        document.getElementById('th-date').addEventListener('click', () => { currentSortDirection = currentSortKey === 'date' && currentSortDirection === 'desc' ? 'asc' : 'desc'; currentSortKey = 'date'; applySortAndRender(); });
-        document.getElementById('th-amount').addEventListener('click', () => { currentSortDirection = currentSortKey === 'amount' && currentSortDirection === 'desc' ? 'asc' : 'desc'; currentSortKey = 'amount'; applySortAndRender(); });
+        document.getElementById('th-date').addEventListener('click', () => { currentSortDirection = currentSortDirection === 'desc' ? 'asc' : 'desc'; currentSortKey = 'date'; applySortAndRender(); });
+        document.getElementById('th-amount').addEventListener('click', () => { currentSortDirection = currentSortDirection === 'desc' ? 'asc' : 'desc'; currentSortKey = 'amount'; applySortAndRender(); });
         document.getElementById('per-page').addEventListener('change', (e) => { itemsPerPage = e.target.value; currentPage = 1; renderTable(); });
         document.getElementById('btn-prev').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
         document.getElementById('btn-next').addEventListener('click', () => { if (currentPage < Math.ceil(sortedRecords.length / parseInt(itemsPerPage))) { currentPage++; renderTable(); } });
@@ -553,16 +546,15 @@
             try {
                 if (editId) {
                     await updateDoc(doc(db, "salon_records", editId), payload);
-                    await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount} บ.`);
+                    await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ.`);
                 } else {
                     await addDoc(recordsCollection, payload);
-                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount} บ.`);
+                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ.`);
                 }
                 window.resetFormMode();
             } catch (error) { alert("บันทึกข้อมูลล้มเหลว: " + error.message); }
         });
 
-        // ฟังก์ชัน Export Excel (คงการแต่งฟอร์มไทยโบว์แดงตามเวอร์ชัน 0.01)
         document.getElementById('btn-export').addEventListener('click', function() {
             const start = document.getElementById('filter-start').value;
             const end = document.getElementById('filter-end').value;

@@ -624,4 +624,85 @@
             const inputDateValue = document.getElementById('date').value; 
             const nowTime = new Date();
             const pad = (num) => String(num).padStart(2, '0');
-            const timeString = `${pad(nowTime
+            const timeString = `${pad(nowTime.getHours())}:${pad(nowTime.getMinutes())}:${pad(nowTime.getSeconds())}`;
+            const fullDateTimeStampString = `${inputDateValue} ${timeString}`;
+
+            const payload = {
+                date: fullDateTimeStampString, 
+                type: itemType,
+                description: document.getElementById('description').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                notes: document.getElementById('notes').value,
+                paymentMethod: document.getElementById('payment-method').value
+            };
+
+            try {
+                if (editId) {
+                    const existingItem = window.transactions.find(t => t.id === editId);
+                    if (existingItem && existingItem.date.substring(0,10) === inputDateValue) {
+                        payload.date = existingItem.date; 
+                    }
+                    await updateDoc(doc(db, "salon_records", editId), payload);
+                    await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
+                } else {
+                    await addDoc(recordsCollection, payload);
+                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
+                }
+                window.resetFormMode();
+            } catch (error) { alert("บันทึกข้อมูลล้มเหลว: " + error.message); }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', async function() {
+            const start = document.getElementById('filter-start').value;
+            const end = document.getElementById('filter-end').value;
+            if (!start || !end) { alert('กรุณาเลือกช่วงวันที่ก่อนส่งออก Excel ครับ'); return; }
+            if (sortedRecords.length === 0) { alert('ไม่พบข้อมูลในช่วงเวลาดังกล่าว'); return; }
+
+            let chronologicalRecords = [...sortedRecords];
+
+            const headers = ['วัน เดือน ปี', 'รายการ', 'ช่องทางชำระเงิน', 'รายรับ (บาท)', 'รายจ่าย (บาท)', 'คงเหลือ (บาท)', 'หมายเหตุ'];
+            const dataRows = [];
+            let currentBalance = 0, sumIncome = 0, sumExpense = 0;
+            const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+            chronologicalRecords.forEach((t) => {
+                const isIncome = t.type === 'income';
+                if (isIncome) { currentBalance += t.amount; sumIncome += t.amount; } 
+                else { currentBalance -= t.amount; sumExpense += t.amount; }
+                
+                const dateObj = new Date(t.date.substring(0, 10));
+                const formattedDate = `${dateObj.getDate()} ${thaiShortMonths[dateObj.getMonth()]} ${dateObj.getFullYear() + 543}`;
+                
+                const methodStr = t.paymentMethod || "เงินสด";
+                
+                dataRows.push([formattedDate, t.description, methodStr, isIncome ? t.amount : "", !isIncome ? t.amount : "", currentBalance, t.notes || "-"]);
+            });
+
+            const summaryStart = dataRows.length + 1;
+            dataRows.push(["", "", "", "", "", "", ""], 
+                          ['สรุปยอดงวดนี้', 'รวมรายรับทั้งหมด', "", sumIncome, "", "", ""],
+                          ["", 'รวมรายจ่ายทั้งหมด', "", "", sumExpense, "", ""],
+                          ["", 'ยอดดุลคงเหลือสุทธิ', "", "", "", sumIncome - sumExpense, (sumIncome - sumExpense >= 0) ? 'งวดนี้มีกำไร' : 'งวดนี้ขาดทุน']);
+
+            const worksheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const addr = XLSX.utils.encode_cell({c:C, r:R});
+                    if (!worksheet[addr]) continue;
+                    worksheet[addr].s = { font: { name: "Aptos", size: 16, bold: R === 0 || R > summaryStart } };
+                    if (R === 0) worksheet[addr].s.fill = { fgColor: { rgb: "F3F4F6" } };
+                    if (R > 0 && (C === 3 || C === 4 || C === 5) && typeof worksheet[addr].v === 'number') worksheet[addr].z = '#,##0.00';
+                }
+            }
+            worksheet['!cols'] = [{ wch: 18 }, { wch: 35 }, { wch: 18 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 30 }];
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "สมุดเงินสด");
+
+            XLSX.writeFile(workbook, `สมุดเงินสดร้านสระผม_${start}_ถึง_${end}.xlsx`);
+        });
+
+        document.getElementById('date').value = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    </script>
+</body>
+</html>

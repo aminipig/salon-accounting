@@ -53,15 +53,23 @@
     <!-- 3. เนื้อหาหลัก -->
     <main id="main-app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
         
-        <!-- ตัวเลือกวันที่ทำงาน -->
+        <!-- ตัวเลือกวันที่ทำงาน พร้อมปุ่มเลื่อนวัน -->
         <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-gray-900">จัดการรอบเวลาและตรวจสอบการจอง 📅</h1>
                 <p class="text-xs text-gray-500 mt-0.5">เลือกวันที่ต้องการตั้งค่า หรือดูว่ามีลูกค้าท่านใดจองเข้ามาบ้าง</p>
             </div>
-            <div class="flex items-center gap-3">
-                <label for="select-date" class="font-medium text-sm text-gray-700 shrink-0">วันที่สั่งการ:</label>
-                <input type="date" id="select-date" class="p-2 border border-gray-300 rounded-xl bg-gray-50 text-sm font-semibold focus:bg-white focus:outline-indigo-500">
+            <div class="flex items-center gap-2">
+                <button id="btn-prev-day" class="p-2 border border-gray-300 hover:bg-gray-100 rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันก่อนหน้า">
+                    ◀
+                </button>
+                <div class="flex items-center gap-2">
+                    <label for="select-date" class="font-medium text-sm text-gray-700 shrink-0">วันที่สั่งการ:</label>
+                    <input type="date" id="select-date" class="p-2 border border-gray-300 rounded-xl bg-gray-50 text-sm font-semibold focus:bg-white focus:outline-indigo-500">
+                </div>
+                <button id="btn-next-day" class="p-2 border border-gray-300 hover:bg-gray-100 rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันถัดไป">
+                    ▶
+                </button>
             </div>
         </div>
 
@@ -137,6 +145,15 @@
                         </div>
 
                         <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">รูปแบบการเลือกวันปลายทาง:</label>
+                            <select id="copy-mode-select" class="w-full p-2 border border-gray-300 rounded-xl text-xs bg-white font-medium focus:outline-indigo-500">
+                                <option value="preset">เลือกเป็นจำนวนวันล่วงหน้า (1, 3, 5, 7, 30 วัน)</option>
+                                <option value="custom">ระบุเลือกวันที่ปลายทางเองจากปฏิทิน (หลายวันได้)</option>
+                            </select>
+                        </div>
+
+                        <!-- ตัวเลือกแบบจำนวนวันล่วงหน้า -->
+                        <div id="copy-preset-container">
                             <label class="block text-xs font-semibold text-gray-600 mb-1">คัดลอกสร้างล่วงหน้าจำนวน (วัน):</label>
                             <select id="copy-days-count" class="w-full p-2 border border-gray-300 rounded-xl text-xs bg-white font-medium focus:outline-indigo-500">
                                 <option value="1">1 วัน (เฉพาะวันที่เลือกสั่งการ)</option>
@@ -146,6 +163,15 @@
                                 <option value="14">14 วัน (2 สัปดาห์)</option>
                                 <option value="30">30 วัน (1 เดือน)</option>
                             </select>
+                        </div>
+
+                        <!-- ตัวเลือกแบบเลือกจากปฏิทินหลายวัน -->
+                        <div id="copy-custom-container" class="hidden space-y-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">คลิกเลือกวันที่ปลายทางที่ต้องการ (ไม่เกิน 30 วัน):</label>
+                            <div id="multi-date-picker-grid" class="grid grid-cols-5 gap-1.5 p-3 border border-gray-200 rounded-xl bg-gray-50 max-h-48 overflow-y-auto text-xs">
+                                <!-- วันที่จะถูกสร้างแบบไดนามิก -->
+                            </div>
+                            <p class="text-[11px] text-indigo-600 font-medium">เลือกไว้แล้ว: <span id="selected-dates-count" class="font-bold">0</span> วัน</p>
                         </div>
 
                         <button id="btn-copy-template" class="w-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 py-2.5 rounded-xl font-semibold text-xs transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
@@ -180,7 +206,7 @@
                     </div>
                 </div>
 
-                <!-- การ์ดกราฟแสดงจำนวนคนจองประจำเดือน -->
+                <!-- การ์ดกราฟแสดงจำนวนคนจองประจำเดือน (ปรับเป็น English Month & CE Year) -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                         <div>
@@ -189,18 +215,18 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <select id="chart-month-select" class="p-1.5 border border-gray-300 rounded-lg text-xs bg-white font-medium focus:outline-indigo-500">
-                                <option value="0">มกราคม</option>
-                                <option value="1">กุมภาพันธ์</option>
-                                <option value="2">มีนาคม</option>
-                                <option value="3">เมษายน</option>
-                                <option value="4">พฤษภาคม</option>
-                                <option value="5">มิถุนายน</option>
-                                <option value="6">กรกฎาคม</option>
-                                <option value="7">สิงหาคม</option>
-                                <option value="8">กันยายน</option>
-                                <option value="9">ตารางกุมภาพันธ์ (ตุลาคม)</option>
-                                <option value="10">พฤศจิกายน</option>
-                                <option value="11">ธันวาคม</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
                             </select>
                             <select id="chart-year-select" class="p-1.5 border border-gray-300 rounded-lg text-xs bg-white font-medium focus:outline-indigo-500"></select>
                         </div>
@@ -231,8 +257,10 @@
         let hasLoggedSession = false;
         let bookingChart = null;
 
-        const thaiFullMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        const englishFullMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+        let selectedCustomDates = [];
 
         window.addEventListener('DOMContentLoaded', async () => {
             initTimeDropdowns();
@@ -243,9 +271,24 @@
             document.getElementById('btn-logout').addEventListener('click', logoutUser);
             document.getElementById('btn-delete-all-slots').addEventListener('click', deleteAllSlotsOfDay);
             
+            // ปุ่มเลื่อนวันก่อนหน้า - ถัดไป
+            document.getElementById('btn-prev-day').addEventListener('click', () => changeSelectedDateByOffset(-1));
+            document.getElementById('btn-next-day').addEventListener('click', () => changeSelectedDateByOffset(1));
+
             document.getElementById('select-date').addEventListener('change', (e) => {
                 currentSelectedDate = e.target.value;
                 loadDayData();
+            });
+
+            document.getElementById('copy-mode-select').addEventListener('change', (e) => {
+                if (e.target.value === 'custom') {
+                    document.getElementById('copy-preset-container').classList.add('hidden');
+                    document.getElementById('copy-custom-container').classList.remove('hidden');
+                    renderMultiDatePickerGrid();
+                } else {
+                    document.getElementById('copy-preset-container').classList.remove('hidden');
+                    document.getElementById('copy-custom-container').classList.add('hidden');
+                }
             });
 
             document.getElementById('chart-month-select').addEventListener('change', updateMonthlyChart);
@@ -258,6 +301,14 @@
                 handleAuthState(session?.user || null);
             });
         });
+
+        function changeSelectedDateByOffset(offsetDays) {
+            const currentObj = new Date(currentSelectedDate);
+            currentObj.setDate(currentObj.getDate() + offsetDays);
+            currentSelectedDate = currentObj.toISOString().split('T')[0];
+            document.getElementById('select-date').value = currentSelectedDate;
+            loadDayData();
+        }
 
         function initTimeDropdowns() {
             const startHourSelect = document.getElementById('start-hour');
@@ -292,10 +343,47 @@
             for (let y = currentYear; y >= currentYear - 3; y--) {
                 const opt = document.createElement('option');
                 opt.value = y;
-                opt.innerText = `พ.ศ. ${y + 543}`;
+                opt.innerText = `${y}`; // ค.ศ.
                 yearSelect.appendChild(opt);
             }
             yearSelect.value = currentYear;
+        }
+
+        // เรนเดอร์ UI ปฏิทินเลือกหลายวัน ย้อนไปล่วงหน้า 30 วัน
+        function renderMultiDatePickerGrid() {
+            const grid = document.getElementById('multi-date-picker-grid');
+            grid.innerHTML = '';
+            selectedCustomDates = [];
+            document.getElementById('selected-dates-count').innerText = "0";
+
+            const baseDate = new Date(currentSelectedDate);
+
+            for (let i = 0; i < 30; i++) {
+                const dObj = new Date(baseDate);
+                dObj.setDate(dObj.getDate() + i);
+                const dStr = dObj.toISOString().split('T')[0];
+                const dayNum = dObj.getDate();
+                const monthNum = dObj.getMonth() + 1;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'p-2 rounded-lg border border-gray-300 bg-white hover:bg-indigo-50 font-semibold text-center cursor-pointer transition';
+                btn.innerText = `${dayNum}/${monthNum}`;
+                btn.title = dStr;
+
+                btn.addEventListener('click', () => {
+                    if (selectedCustomDates.includes(dStr)) {
+                        selectedCustomDates = selectedCustomDates.filter(d => d !== dStr);
+                        btn.className = 'p-2 rounded-lg border border-gray-300 bg-white hover:bg-indigo-50 font-semibold text-center cursor-pointer transition';
+                    } else {
+                        selectedCustomDates.push(dStr);
+                        btn.className = 'p-2 rounded-lg border border-indigo-500 bg-indigo-600 text-white font-bold text-center cursor-pointer transition shadow-xs';
+                    }
+                    document.getElementById('selected-dates-count').innerText = selectedCustomDates.length;
+                });
+
+                grid.appendChild(btn);
+            }
         }
 
         function isPastDate(dateStr) {
@@ -391,7 +479,6 @@
             
             const isPast = isPastDate(currentSelectedDate);
 
-            // ปรับ UI ควบคุมปุ่มต่างๆ ตามสถานะวันย้อนหลัง
             if (isPast) {
                 document.getElementById('past-date-warning').classList.remove('hidden');
                 document.getElementById('btn-submit-slot').disabled = true;
@@ -405,7 +492,6 @@
                 document.getElementById('btn-copy-template').disabled = false;
             }
 
-            // 1. ดึงสล็อตเวลาของวันที่เลือก
             const { data: slots, error: slotErr } = await _supabase
                 .from('booking_slots')
                 .select('*')
@@ -415,7 +501,6 @@
             if (slotErr) console.error("Slot fetch error:", slotErr);
             slotsData = slots || [];
 
-            // 2. ดึงข้อมูลรายการจอง
             const slotIds = slotsData.map(s => s.id);
             if (slotIds.length > 0) {
                 const { data: bookings, error: bookErr } = await _supabase
@@ -429,7 +514,6 @@
                 bookingsData = [];
             }
 
-            // แสดงปุ่มลบทั้งหมดเมื่อไม่ใช่ไม่อดีต และมีสล็อต
             if (!isPast && slotsData.length > 0) {
                 document.getElementById('btn-delete-all-slots').classList.remove('hidden');
             } else {
@@ -438,6 +522,10 @@
 
             renderSlots();
             loadRecentDatesForTemplate();
+
+            if (document.getElementById('copy-mode-select').value === 'custom') {
+                renderMultiDatePickerGrid();
+            }
         }
 
         async function loadRecentDatesForTemplate() {
@@ -639,7 +727,6 @@
             }
         });
 
-        // ลบสล็อตทั้งหมดของวันปัจจุบัน/อนาคต
         async function deleteAllSlotsOfDay() {
             if (isPastDate(currentSelectedDate)) {
                 alert("🔒 ไม่สามารถลบสล็อตของวันที่ย้อนหลังได้ครับ!");
@@ -661,7 +748,7 @@
             }
         }
 
-        // คัดลอกสล็อตแม่แบบ พร้อมเช็ควันที่มีแผนเดิมแล้วและแจ้งเตือนก่อนทับ
+        // คัดลอกสล็อตแม่แบบ (รองรับทั้งแบบล่วงหน้า X วัน และแบบเลือกวันที่ปลายทางจากปฏิทิน)
         document.getElementById('btn-copy-template').addEventListener('click', async () => {
             if (isPastDate(currentSelectedDate)) {
                 alert("🔒 ไม่สามารถคัดลอกสร้างสล็อตในวันที่ย้อนหลังได้ครับ!");
@@ -669,7 +756,7 @@
             }
 
             const templateDate = document.getElementById('source-template-date').value;
-            const copyDaysCount = parseInt(document.getElementById('copy-days-count').value);
+            const copyMode = document.getElementById('copy-mode-select').value;
 
             if (!templateDate) {
                 alert("กรุณาเลือกวันที่เป็นแม่แบบก่อนครับ!");
@@ -686,16 +773,25 @@
                 return;
             }
 
-            // คำนวณช่วงวันที่เป้าหมายทั้งหมด
-            const baseDate = new Date(currentSelectedDate);
-            const targetDateStrings = [];
-            for (let d = 0; d < copyDaysCount; d++) {
-                const targetObj = new Date(baseDate);
-                targetObj.setDate(targetObj.getDate() + d);
-                targetDateStrings.push(targetObj.toISOString().split('T')[0]);
+            let targetDateStrings = [];
+
+            if (copyMode === 'preset') {
+                const copyDaysCount = parseInt(document.getElementById('copy-days-count').value);
+                const baseDate = new Date(currentSelectedDate);
+                for (let d = 0; d < copyDaysCount; d++) {
+                    const targetObj = new Date(baseDate);
+                    targetObj.setDate(targetObj.getDate() + d);
+                    targetDateStrings.push(targetObj.toISOString().split('T')[0]);
+                }
+            } else {
+                if (selectedCustomDates.length === 0) {
+                    alert("กรุณาคลิกเลือกวันที่ปลายทางจากปฏิทินอย่างน้อย 1 วันครับ!");
+                    return;
+                }
+                targetDateStrings = [...selectedCustomDates];
             }
 
-            // ตรวจสอบวันที่มีการสร้างสล็อตไว้อยู่แล้ว
+            // ตรวจสอบวันที่มีสล็อตเดิมอยู่แล้ว
             const { data: existingInTargets } = await _supabase
                 .from('booking_slots')
                 .select('date')
@@ -708,18 +804,16 @@
                 const confirmOverwrite = confirm(`⚠️ พบวันที่สล็อตถูกสร้างไว้อยู่แล้วดังนี้:\n- ${formattedExistingDates}\n\nคุณต้องการลบแผนเดิมของวันที่ระบุแล้วสร้างทับด้วยแม่แบบใหม่ (${templateDate}) ใช่ไหมครับ?`);
                 if (!confirmOverwrite) return;
             } else {
-                if (!confirm(`ยืนยันคัดลอกสล็อตเวลา ${templateSlots.length} รอบ จากวันที่ ${templateDate} ไปสร้างล่วงหน้า ${copyDaysCount} วัน (เริ่ม ${currentSelectedDate})?`)) return;
+                if (!confirm(`ยืนยันคัดลอกสล็อตเวลา ${templateSlots.length} รอบ จากวันที่ ${templateDate} ไปสร้างในวันที่เลือกจำนวน ${targetDateStrings.length} วัน?`)) return;
             }
 
             let totalCreated = 0;
 
             for (const targetDateStr of targetDateStrings) {
-                // ลบสล็อตเดิมของวันนั้นออกก่อนหากเลือกทับ
                 if (datesWithExistingSlots.includes(targetDateStr)) {
                     await _supabase.from('booking_slots').delete().eq('date', targetDateStr);
                 }
 
-                // สร้างสล็อตชุดใหม่จากแม่แบบ
                 const newSlotsToInsert = templateSlots.map(tSlot => ({
                     date: targetDateStr,
                     start_time: tSlot.start_time,
@@ -734,8 +828,8 @@
                 }
             }
 
-            alert(`🎉 คัดลอกและสร้างสล็อตเวลาสำเร็จเรียบร้อย รวม ${totalCreated} รอบ (สำหรับ ${copyDaysCount} วัน)`);
-            await writeActivityLog("คัดลอกรอบเวลาแม่แบบ", `คัดลอกแม่แบบจากวันที่ ${templateDate} ไปสร้างทับล่วงหน้า ${copyDaysCount} วัน (นับจาก ${currentSelectedDate})`);
+            alert(`🎉 คัดลอกและสร้างสล็อตเวลาสำเร็จเรียบร้อย รวม ${totalCreated} รอบ (สำหรับ ${targetDateStrings.length} วัน)`);
+            await writeActivityLog("คัดลอกรอบเวลาแม่แบบ", `คัดลอกแม่แบบจากวันที่ ${templateDate} ไปสร้างยังปลายทาง ${targetDateStrings.length} วัน`);
             
             loadDayData();
             updateMonthlyChart();
@@ -778,13 +872,12 @@
             const selectedMonth = parseInt(document.getElementById('chart-month-select').value);
             const selectedYear = parseInt(document.getElementById('chart-year-select').value);
 
-            document.getElementById('chart-month-year-label').innerText = `${thaiFullMonths[selectedMonth]} พ.ศ. ${selectedYear + 543}`;
+            document.getElementById('chart-month-year-label').innerText = `${englishFullMonths[selectedMonth]} ${selectedYear}`;
 
             const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
             const startDateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`;
             const endDateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
 
-            // 1. ดึงสล็อตในเดือนนั้น
             const { data: monthSlots } = await _supabase
                 .from('booking_slots')
                 .select('id, date')
@@ -799,7 +892,6 @@
             let monthTotal = 0;
 
             if (slotIds.length > 0) {
-                // 2. ดึงการจองคิวในสล็อตเหล่านั้น
                 const { data: monthBookings } = await _supabase
                     .from('bookings')
                     .select('slot_id, status')
@@ -820,7 +912,6 @@
 
             document.getElementById('total-month-bookings').innerText = monthTotal;
 
-            // วาดกราฟ Chart.js
             const labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
             const ctx = document.getElementById('bookingChart').getContext('2d');
 
@@ -849,12 +940,12 @@
                     scales: {
                         x: {
                             grid: { display: false },
-                            title: { display: true, text: 'วันที่', font: { size: 11 } }
+                            title: { display: true, text: 'Date', font: { size: 11 } }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: { precision: 0 },
-                            title: { display: true, text: 'จำนวนคิว', font: { size: 11 } }
+                            title: { display: true, text: 'Bookings', font: { size: 11 } }
                         }
                     }
                 }

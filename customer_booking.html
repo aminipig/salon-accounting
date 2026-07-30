@@ -19,7 +19,7 @@
             <p class="text-xs text-gray-500 mb-6 font-medium">ระบบจองคิวใช้บริการออนไลน์ <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md font-mono text-[11px] font-bold border border-indigo-100">v0.01</span></p>
 
             <div class="space-y-3.5">
-                <!-- ปุ่มเข้าผ่าน LINE -->
+                <!-- ปุ่มเข้าผ่าน LINE Direct LIFF -->
                 <button id="btn-login-line" class="w-full flex items-center justify-center gap-3 bg-[#06C755] hover:bg-[#05b34c] text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-sm transition text-sm cursor-pointer">
                     <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                         <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.412-.105-.531-.283l-2.222-3.212v2.839c0 .345-.282.629-.627.629-.348 0-.63-.284-.63-.629V8.108c0-.27.173-.51.43-.595.063-.023.132-.033.201-.033.211 0 .411.105.53.282l2.223 3.213V8.108c0-.345.282-.63.628-.63.348 0 .63.285.63.63v4.771zm-5.741 0c0 .345-.282.629-.63.629-.345 0-.627-.284-.627-.629V8.108c0-.345.282-.63.628-.63.347 0 .629.285.629.63v4.771zm-2.466.629H4.917c-.345 0-.63-.284-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
@@ -91,7 +91,6 @@
             </div>
         </div>
 
-        <!-- แท็บ 1: ตารางเลือกรอบจอง -->
         <div id="view-booking-section" class="px-4 space-y-4">
             <div class="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                 <button id="btn-cust-prev-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">◀</button>
@@ -114,7 +113,6 @@
             </div>
         </div>
 
-        <!-- แท็บ 2: คิวที่จองไว้ & ประวัติ 30 วัน -->
         <div id="view-history-section" class="px-4 space-y-4 hidden">
             <div>
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ (ยกเลิกเพื่อจองใหม่ได้)</h3>
@@ -196,16 +194,15 @@
         </div>
     </div>
 
-    <!-- Supabase & LIFF Client Logic -->
+    <!-- Supabase & LIFF Client Engine -->
     <script>
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
-        const MY_LIFF_ID = "2010902328-ujV1R7Rw"; 
+        const MY_LIFF_ID = "2010902328-ujV1R7Rw";
 
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null; 
-        let isLiffInitialized = false;
         let currentSelectedDate = new Date().toISOString().split('T')[0];
         let daySlotsData = [];
         let dayBookingsData = [];
@@ -217,40 +214,20 @@
         window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('cust-select-date').value = currentSelectedDate;
 
-            // 1. Initialise LIFF ทันทีที่โหลดหน้าเว็บ (บังคับรันเพื่อให้ SDK พร้อมทำงาน)
-            await initLiffApp();
+            // 1. ตรวจสอบ LINE LIFF ล็อกอินก่อน
+            await initLiffDirect();
 
-            // 2. ตรวจสอบการเข้าใช้งานผ่าน Google Auth
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session?.user && !currentUser) {
-                const meta = session.user.user_metadata || {};
-                currentUser = {
-                    id: session.user.id,
-                    name: meta.full_name || meta.name || "ลูกค้า Google",
-                    phone: localStorage.getItem(`cust_phone_${session.user.id}`) || null,
-                    email: session.user.email, // ใช้ Email เป็น Account ID
-                    avatar: meta.avatar_url || meta.picture || null,
-                    provider: 'google'
-                };
-                checkUserLoginState();
+            // 2. ถ้าไม่ได้ใช้ LINE ให้เช็ค Google Auth จาก Supabase
+            if (!currentUser) {
+                const { data: { session } } = await _supabase.auth.getSession();
+                handleGoogleSession(session?.user || null);
+
+                _supabase.auth.onAuthStateChange((_event, session) => {
+                    handleGoogleSession(session?.user || null);
+                });
             }
 
-            _supabase.auth.onAuthStateChange((_event, session) => {
-                if (session?.user && !currentUser) {
-                    const meta = session.user.user_metadata || {};
-                    currentUser = {
-                        id: session.user.id,
-                        name: meta.full_name || meta.name || "ลูกค้า Google",
-                        phone: localStorage.getItem(`cust_phone_${session.user.id}`) || null,
-                        email: session.user.email,
-                        avatar: meta.avatar_url || meta.picture || null,
-                        provider: 'google'
-                    };
-                    checkUserLoginState();
-                }
-            });
-
-            // ผูก Event Handlers
+            // Handlers
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
             document.getElementById('btn-login-line').addEventListener('click', loginWithLine);
             document.getElementById('btn-customer-logout').addEventListener('click', logoutCustomer);
@@ -282,40 +259,66 @@
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
 
-        // 🟢 ฟังก์ชันเตรียมความพร้อม LINE LIFF (รันทันทีที่เข้าเว็บ)
-        async function initLiffApp() {
+        // 🟢 ระบบ LINE LIFF Direct Login
+        async function initLiffDirect() {
+            if (!window.liff || !MY_LIFF_ID) return;
             try {
                 await liff.init({ liffId: MY_LIFF_ID });
-                isLiffInitialized = true;
-                
-                // หากพบว่าลูกค้าเคยล็อกอิน LINE ค้างไว้ ให้เข้าสู่ระบบอัตโนมัติ
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     currentUser = {
                         id: profile.userId,
                         name: profile.displayName || "ลูกค้า LINE",
                         phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
-                        email: profile.userId, // 🌟 ใช้ LINE userId เป็น Account ID แทน Email
+                        email: profile.userId, // ใช้ LINE userId เป็น Account ID
                         avatar: profile.pictureUrl || null,
                         provider: 'line'
                     };
                     checkUserLoginState();
                 }
             } catch (err) {
-                console.error("LIFF Init Error:", err);
+                console.log("LIFF Direct Init Status:", err.message);
             }
         }
 
-        // 🟢 ปุ่มกดล็อกอินด้วย LINE
-        function loginWithLine() {
-            if (!isLiffInitialized) {
-                alert("ระบบ LINE กำลังเชื่อมต่อ กรุณารอสักครู่แล้วกดเข้าใช้งานใหม่อีกครั้งครับ");
+        async function loginWithLine() {
+            if (!window.liff || !MY_LIFF_ID) {
+                alert("ระบบ LINE กำลังปรับปรุง กรุณาใช้ Google Login แทนได้เลยครับ");
                 return;
             }
-            if (!liff.isLoggedIn()) {
-                // เปลี่ยนหน้าไปล็อกอิน LINE หากยังไม่ล็อกอิน
-                liff.login({ redirectUri: window.location.href });
+            try {
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    currentUser = {
+                        id: profile.userId,
+                        name: profile.displayName || "ลูกค้า LINE",
+                        phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
+                        email: profile.userId,
+                        avatar: profile.pictureUrl || null,
+                        provider: 'line'
+                    };
+                    checkUserLoginState();
+                }
+            } catch (err) {
+                alert("LINE Login Error: " + err.message);
             }
+        }
+
+        function handleGoogleSession(user) {
+            if (user && !currentUser) {
+                const meta = user.user_metadata || {};
+                currentUser = {
+                    id: user.id,
+                    name: meta.full_name || meta.name || "ลูกค้า Google",
+                    phone: localStorage.getItem(`cust_phone_${user.id}`) || null,
+                    email: user.email,
+                    avatar: meta.avatar_url || meta.picture || null,
+                    provider: 'google'
+                };
+            }
+            checkUserLoginState();
         }
 
         async function loginWithGoogle() {
@@ -327,7 +330,7 @@
             if (confirm("ต้องการออกจากระบบใช่ไหมครับ?")) {
                 currentUser = null;
                 try {
-                    if (isLiffInitialized && liff.isLoggedIn()) {
+                    if (window.liff && liff.isLoggedIn()) {
                         liff.logout();
                     }
                 } catch(e) {}
@@ -348,7 +351,6 @@
                     avatarImg.classList.remove('hidden');
                 }
 
-                // ตรวจสอบว่าเคยใส่เบอร์โทรศัพท์หรือยัง
                 if (!currentUser.phone) {
                     document.getElementById('phone-modal-title').innerText = "บันทึกเบอร์โทรศัพท์สำหรับติดต่อ";
                     document.getElementById('btn-cancel-phone-edit').classList.add('hidden');
@@ -379,7 +381,6 @@
             }
 
             currentUser.phone = phone;
-            // บันทึกเบอร์โทรอัปเดตลงเครื่อง
             localStorage.setItem(`cust_phone_${currentUser.id}`, phone);
             
             document.getElementById('phone-setup-modal').classList.add('hidden');
@@ -428,13 +429,12 @@
             loadDaySlots();
         }
 
-        // 🌟 ดึงข้อมูลคิวที่จองไปแล้ว โดยผูกกับ "Account ID (currentUser.email)" เป็นหลัก
         async function fetchMyActiveBookings() {
             let query = _supabase
                 .from('bookings')
                 .select('id, slot_id, status, service_type, customer_phone, customer_email, booking_slots!inner(id, date, start_time, end_time)')
                 .neq('status', 'cancelled')
-                .eq('customer_email', currentUser.email); // หาจาก Account ID เสมอ
+                .eq('customer_email', currentUser.email);
 
             const { data } = await query;
             const now = new Date();
@@ -505,7 +505,6 @@
                 const remaining = slot.max_capacity - bookedCount;
                 const isFull = remaining <= 0;
 
-                // เช็คว่าเคยจองรอบนี้ไหม (ดูจาก Account ID เป็นหลัก)
                 const isMyBooked = slotBookings.some(b => b.customer_email === currentUser.email);
 
                 if (!isFull && !isPassed) availableSlotsCount++;
@@ -586,7 +585,6 @@
             selectedSlotForBooking = null;
         }
 
-        // 🌟 บันทึกการจอง โดยเซฟเบอร์โทร ณ ตอนนั้น และแนบ Account ID (Email/LINE ID) ไปด้วย
         async function submitBooking(e) {
             e.preventDefault();
             if (!selectedSlotForBooking) return;
@@ -599,8 +597,8 @@
             const payload = {
                 slot_id: selectedSlotForBooking.id,
                 customer_name: currentUser.name,
-                customer_phone: currentUser.phone, // บันทึก Snapshot เบอร์ปัจจุบัน
-                customer_email: currentUser.email, // ตัวอ้างอิงเพื่อดึงประวัติ ไม่เปลี่ยนแปลงตามเบอร์
+                customer_phone: currentUser.phone,
+                customer_email: currentUser.email,
                 service_type: service,
                 status: 'confirmed'
             };
@@ -616,7 +614,6 @@
             }
         }
 
-        // 🌟 ดึงข้อมูลประวัติย้อนหลังผ่าน Account ID (currentUser.email)
         async function loadCustomerHistoryData() {
             const activeContainer = document.getElementById('active-bookings-list');
             const pastContainer = document.getElementById('past-bookings-list');
@@ -628,7 +625,7 @@
                 .from('bookings')
                 .select('id, service_type, status, created_at, customer_phone, customer_email, booking_slots!inner(id, date, start_time, end_time)')
                 .order('created_at', { ascending: false })
-                .eq('customer_email', currentUser.email); // หาจาก Account ID ເสมอ
+                .eq('customer_email', currentUser.email);
 
             const { data: bookings, error } = await query;
 

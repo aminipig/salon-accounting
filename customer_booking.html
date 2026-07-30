@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Prompt', sans-serif; }
+        * { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans antialiased text-slate-800 pb-20">
@@ -102,13 +102,13 @@
         <div id="view-booking-section" class="px-4 space-y-4">
             <!-- ตัวเลื่อนเลือกวัน -->
             <div class="bg-white p-4 rounded-3xl border border-sky-100 shadow-2xs flex items-center justify-between">
-                <button id="btn-cust-prev-day" class="w-9 h-9 border border-sky-100 rounded-2xl bg-sky-50/60 hover:bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black active:scale-95 transition">◀</button>
+                <button id="btn-cust-prev-day" class="w-9 h-9 border border-sky-100 rounded-2xl bg-sky-50/60 hover:bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black active:scale-95 transition disabled:opacity-30 disabled:cursor-not-allowed">◀</button>
                 <div class="text-center">
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">เลือกวันที่ใช้บริการ</p>
                     <input type="date" id="cust-select-date" class="bg-transparent font-black text-base text-sky-600 border-none focus:outline-hidden text-center cursor-pointer">
                     <p id="cust-thai-date-label" class="text-[11px] text-slate-500 font-bold -mt-0.5"></p>
                 </div>
-                <button id="btn-cust-next-day" class="w-9 h-9 border border-sky-100 rounded-2xl bg-sky-50/60 hover:bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black active:scale-95 transition">▶</button>
+                <button id="btn-cust-next-day" class="w-9 h-9 border border-sky-100 rounded-2xl bg-sky-50/60 hover:bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black active:scale-95 transition disabled:opacity-30 disabled:cursor-not-allowed">▶</button>
             </div>
 
             <!-- รายการรอบสล็อตที่ว่าง -->
@@ -123,7 +123,7 @@
             </div>
         </div>
 
-        <!-- หน้าที่ 2: คิวที่จองไว้ & ประวัติ 30 วัน -->
+        <!-- หน้าที่ 2: คิวที่จองไว้ & ประวัติย้อนหลัง 90 วัน -->
         <div id="view-history-section" class="px-4 space-y-4 hidden">
             <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ</h3>
@@ -133,7 +133,7 @@
             </div>
 
             <div class="pt-4 border-t border-slate-200">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1">📜 ประวัติย้อนหลัง</h3>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1">📜 ประวัติย้อนหลัง (ไม่เกิน 90 วัน)</h3>
                 <div id="past-bookings-list" class="space-y-2.5">
                     <!-- ประวัติย้อนหลังจะแสดงตรงนี้ -->
                 </div>
@@ -222,6 +222,7 @@
         const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
         window.addEventListener('DOMContentLoaded', async () => {
+            initCustomerDatePickerLimits(); // 🌟 ล็อกขอบเขตปฏิทินลูกค้า (-7 วัน ถึง +90 วัน)
             document.getElementById('cust-select-date').value = currentSelectedDate;
 
             // ตรวจสอบ Auth Session จาก Supabase
@@ -263,6 +264,57 @@
             });
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
+
+        // 🌟 ข้อที่ 1: ตั้งค่าขอบเขตปฏิทินลูกค้า (ย้อนหลังไม่เกิน 7 วัน และ ล่วงหน้าไม่เกิน 90 วัน)
+        function initCustomerDatePickerLimits() {
+            const dateInput = document.getElementById('cust-select-date');
+            
+            // Min: ย้อนหลังไม่เกิน 7 วัน
+            const minDateObj = new Date();
+            minDateObj.setDate(minDateObj.getDate() - 7);
+            const minDateStr = minDateObj.toISOString().split('T')[0];
+
+            // Max: ล่วงหน้าไม่เกิน 90 วัน
+            const maxDateObj = new Date();
+            maxDateObj.setDate(maxDateObj.getDate() + 90);
+            const maxDateStr = maxDateObj.toISOString().split('T')[0];
+
+            dateInput.min = minDateStr;
+            dateInput.max = maxDateStr;
+        }
+
+        function changeDateOffset(offset) {
+            const dateInput = document.getElementById('cust-select-date');
+            const d = new Date(currentSelectedDate);
+            d.setDate(d.getDate() + offset);
+            const targetDateStr = d.toISOString().split('T')[0];
+
+            // ตรวจสอบให้อยู่ภายใน min/max
+            if (dateInput.min && targetDateStr < dateInput.min) return;
+            if (dateInput.max && targetDateStr > dateInput.max) return;
+
+            currentSelectedDate = targetDateStr;
+            dateInput.value = currentSelectedDate;
+            loadDaySlots();
+        }
+
+        function updatePrevNextButtonStates() {
+            const dateInput = document.getElementById('cust-select-date');
+            const prevBtn = document.getElementById('btn-cust-prev-day');
+            const nextBtn = document.getElementById('btn-cust-next-day');
+
+            if (dateInput.min && currentSelectedDate <= dateInput.min) {
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.disabled = false;
+            }
+
+            if (dateInput.max && currentSelectedDate >= dateInput.max) {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
+        }
 
         function handleUserSession(user) {
             if (user) {
@@ -368,14 +420,6 @@
             loadCustomerDashboardData();
         }
 
-        function changeDateOffset(offset) {
-            const d = new Date(currentSelectedDate);
-            d.setDate(d.getDate() + offset);
-            currentSelectedDate = d.toISOString().split('T')[0];
-            document.getElementById('cust-select-date').value = currentSelectedDate;
-            loadDaySlots();
-        }
-
         function formatThaiDate(dateStr) {
             if (!dateStr) return '';
             const p = dateStr.split('-');
@@ -439,6 +483,8 @@
 
         async function loadDaySlots() {
             document.getElementById('cust-thai-date-label').innerText = formatThaiDate(currentSelectedDate);
+            updatePrevNextButtonStates();
+
             const container = document.getElementById('cust-slots-container');
             container.innerHTML = '<p class="text-xs text-slate-400 text-center py-8 font-medium">🔄 กำลังโหลดช่วงเวลาที่เปิดรับจอง...</p>';
 
@@ -594,6 +640,7 @@
             }
         }
 
+        // 🌟 ข้อที่ 2: โหลดประวัติย้อนหลังในเมนู "คิวของฉัน" กรองย้อนหลังไม่เกิน 90 วัน
         async function loadCustomerHistoryData() {
             const activeContainer = document.getElementById('active-bookings-list');
             const pastContainer = document.getElementById('past-bookings-list');
@@ -601,11 +648,18 @@
             activeContainer.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center font-medium">🔄 กำลังโหลดข้อมูลคิว...</p>';
             pastContainer.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center font-medium">🔄 กำลังโหลดประวัติย้อนหลัง...</p>';
 
+            // คำนวณขอบเขตรวันที่ย้อนหลัง 90 วัน
+            const now = new Date();
+            const past90DaysObj = new Date();
+            past90DaysObj.setDate(past90DaysObj.getDate() - 90);
+            const past90DaysStr = past90DaysObj.toISOString().split('T')[0];
+
             let query = _supabase
                 .from('bookings')
                 .select('id, service_type, status, created_at, customer_phone, customer_email, booking_slots!inner(id, date, start_time, end_time)')
                 .order('created_at', { ascending: false })
-                .eq('customer_email', currentUser.email);
+                .eq('customer_email', currentUser.email)
+                .gte('booking_slots.date', past90DaysStr); // 🌟 กรองย้อนหลังไม่เกิน 90 วัน
 
             const { data: bookings, error } = await query;
 
@@ -615,7 +669,6 @@
             }
 
             const allBookings = bookings || [];
-            const now = new Date();
 
             const activeList = allBookings.filter(b => {
                 const slotEndDateTime = new Date(`${b.booking_slots.date}T${b.booking_slots.end_time}`);
@@ -651,7 +704,7 @@
 
             pastContainer.innerHTML = '';
             if (pastList.length === 0) {
-                pastContainer.innerHTML = '<p class="text-xs text-slate-400 bg-white p-5 rounded-3xl text-center font-medium border border-slate-200/80">ไม่มีประวัติการจองย้อนหลัง</p>';
+                pastContainer.innerHTML = '<p class="text-xs text-slate-400 bg-white p-5 rounded-3xl text-center font-medium border border-slate-200/80">ไม่มีประวัติการจองย้อนหลัง (ในระยะ 90 วัน)</p>';
             } else {
                 pastList.forEach(b => {
                     const isCancelled = b.status === 'cancelled';

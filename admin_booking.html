@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บริหารสล็อตเวลาจอง v0.01 - ร้านสระผมคุณส้ม</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body class="bg-gray-50 font-sans antialiased text-gray-800">
@@ -106,7 +107,7 @@
                             <input type="number" id="max-capacity" value="1" min="1" max="10" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
                         </div>
                         
-                        <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition cursor-pointer text-sm shadow-xs">
+                        <button type="submit" id="btn-submit-slot" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition cursor-pointer text-sm shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
                             เปิดรอบเวลานี้
                         </button>
                     </form>
@@ -114,7 +115,7 @@
                     <!-- ปุ่มตัวช่วยสร้างรอบมาตรฐานด่วน -->
                     <div class="mt-6 pt-5 border-t border-gray-100">
                         <p class="text-xs font-semibold text-gray-500 mb-2">⚡ สร้างรอบมาตรฐานประจำวัน (09:00 - 21:00 น.)</p>
-                        <button id="btn-quick-generate" class="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2 rounded-xl font-medium text-xs transition cursor-pointer">
+                        <button id="btn-quick-generate" class="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2 rounded-xl font-medium text-xs transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                             + สร้างรอบทุก 1 ชม. อัตโนมัติ
                         </button>
                     </div>
@@ -147,26 +148,69 @@
                             </select>
                         </div>
 
-                        <button id="btn-copy-template" class="w-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 py-2.5 rounded-xl font-semibold text-xs transition cursor-pointer">
+                        <button id="btn-copy-template" class="w-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 py-2.5 rounded-xl font-semibold text-xs transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                             🚀 คัดลอกและสร้างรอบเวลา
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- คอลัมน์ขวา: ตารางแสดงช่วงเวลา และรายชื่อผู้จอง -->
+            <!-- คอลัมน์ขวา: ตารางแสดงช่วงเวลา และกราฟแสดงสถิติ -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- การ์ดตารางสล็อตเวลา -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
                     <div class="flex flex-wrap items-center justify-between mb-4 gap-2">
-                        <h3 class="text-lg font-bold text-gray-800">
-                            รายการรอบเวลาประจำวันที่ <span id="display-selected-date" class="text-indigo-600 font-mono"></span>
-                            <span id="display-thai-date" class="text-indigo-800 font-normal text-base ml-1"></span>
-                        </h3>
-                        <span id="slot-count-badge" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">0 รอบ</span>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">
+                                รายการรอบเวลาประจำวันที่ <span id="display-selected-date" class="text-indigo-600 font-mono"></span>
+                                <span id="display-thai-date" class="text-indigo-800 font-normal text-base ml-1"></span>
+                            </h3>
+                            <p id="past-date-warning" class="text-xs text-amber-600 font-medium mt-0.5 hidden">🔒 วันที่ย้อนหลัง: แสดงผลสำหรับดูประวัติเท่านั้น (ไม่สามารถแก้ไขหรือลบได้)</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="slot-count-badge" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">0 รอบ</span>
+                            <button id="btn-delete-all-slots" class="px-3 py-1 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg text-xs font-semibold transition cursor-pointer hidden">
+                                🗑️ ลบทั้งหมดของวันนี้
+                            </button>
+                        </div>
                     </div>
 
                     <div id="slots-container" class="space-y-4">
                         <!-- รายการรอบเวลาจะถูกเรนเดอร์ตรงนี้ -->
+                    </div>
+                </div>
+
+                <!-- การ์ดกราฟแสดงจำนวนคนจองประจำเดือน -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800">📊 กราฟสรุปจำนวนผู้จองรายวัน</h3>
+                            <p class="text-xs text-gray-500">จำนวนการจองคิวในแต่ละวัน ประจำเดือน <span id="chart-month-year-label" class="font-semibold text-indigo-600"></span></p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="chart-month-select" class="p-1.5 border border-gray-300 rounded-lg text-xs bg-white font-medium focus:outline-indigo-500">
+                                <option value="0">มกราคม</option>
+                                <option value="1">กุมภาพันธ์</option>
+                                <option value="2">มีนาคม</option>
+                                <option value="3">เมษายน</option>
+                                <option value="4">พฤษภาคม</option>
+                                <option value="5">มิถุนายน</option>
+                                <option value="6">กรกฎาคม</option>
+                                <option value="7">สิงหาคม</option>
+                                <option value="8">กันยายน</option>
+                                <option value="9">ตารางกุมภาพันธ์ (ตุลาคม)</option>
+                                <option value="10">พฤศจิกายน</option>
+                                <option value="11">ธันวาคม</option>
+                            </select>
+                            <select id="chart-year-select" class="p-1.5 border border-gray-300 rounded-lg text-xs bg-white font-medium focus:outline-indigo-500"></select>
+                        </div>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="bookingChart"></canvas>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium">
+                        <span>ยอดการจองรวมทั้งเดือน: <strong id="total-month-bookings" class="text-indigo-600 text-sm font-bold">0</strong> คิว</span>
+                        <span class="text-[10px] text-gray-400">*นับเฉพาะคิวที่มีสถานะปกติ</span>
                     </div>
                 </div>
             </div>
@@ -185,18 +229,27 @@
         let bookingsData = [];
         let currentUserData = null;
         let hasLoggedSession = false;
+        let bookingChart = null;
 
+        const thaiFullMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
         window.addEventListener('DOMContentLoaded', async () => {
             initTimeDropdowns();
+            initChartFilters();
+            
             document.getElementById('select-date').value = currentSelectedDate;
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
             document.getElementById('btn-logout').addEventListener('click', logoutUser);
+            document.getElementById('btn-delete-all-slots').addEventListener('click', deleteAllSlotsOfDay);
+            
             document.getElementById('select-date').addEventListener('change', (e) => {
                 currentSelectedDate = e.target.value;
                 loadDayData();
             });
+
+            document.getElementById('chart-month-select').addEventListener('change', updateMonthlyChart);
+            document.getElementById('chart-year-select').addEventListener('change', updateMonthlyChart);
 
             const { data: { session } } = await _supabase.auth.getSession();
             handleAuthState(session?.user || null);
@@ -225,6 +278,29 @@
                 if (i === 10) optEnd.selected = true;
                 endHourSelect.appendChild(optEnd);
             }
+        }
+
+        function initChartFilters() {
+            const now = new Date();
+            const monthSelect = document.getElementById('chart-month-select');
+            const yearSelect = document.getElementById('chart-year-select');
+
+            monthSelect.value = now.getMonth();
+
+            const currentYear = now.getFullYear();
+            yearSelect.innerHTML = '';
+            for (let y = currentYear; y >= currentYear - 3; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.innerText = `พ.ศ. ${y + 543}`;
+                yearSelect.appendChild(opt);
+            }
+            yearSelect.value = currentYear;
+        }
+
+        function isPastDate(dateStr) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            return dateStr < todayStr;
         }
 
         function formatThaiDateString(dateStr) {
@@ -299,6 +375,7 @@
                 }
 
                 loadDayData();
+                updateMonthlyChart();
             } else {
                 currentUserData = null;
                 hasLoggedSession = false;
@@ -312,6 +389,22 @@
             document.getElementById('display-selected-date').innerText = currentSelectedDate;
             document.getElementById('display-thai-date').innerText = formatThaiDateString(currentSelectedDate);
             
+            const isPast = isPastDate(currentSelectedDate);
+
+            // ปรับ UI ควบคุมปุ่มต่างๆ ตามสถานะวันย้อนหลัง
+            if (isPast) {
+                document.getElementById('past-date-warning').classList.remove('hidden');
+                document.getElementById('btn-submit-slot').disabled = true;
+                document.getElementById('btn-quick-generate').disabled = true;
+                document.getElementById('btn-copy-template').disabled = true;
+                document.getElementById('btn-delete-all-slots').classList.add('hidden');
+            } else {
+                document.getElementById('past-date-warning').classList.add('hidden');
+                document.getElementById('btn-submit-slot').disabled = false;
+                document.getElementById('btn-quick-generate').disabled = false;
+                document.getElementById('btn-copy-template').disabled = false;
+            }
+
             // 1. ดึงสล็อตเวลาของวันที่เลือก
             const { data: slots, error: slotErr } = await _supabase
                 .from('booking_slots')
@@ -336,11 +429,17 @@
                 bookingsData = [];
             }
 
+            // แสดงปุ่มลบทั้งหมดเมื่อไม่ใช่ไม่อดีต และมีสล็อต
+            if (!isPast && slotsData.length > 0) {
+                document.getElementById('btn-delete-all-slots').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-delete-all-slots').classList.add('hidden');
+            }
+
             renderSlots();
             loadRecentDatesForTemplate();
         }
 
-        // ดึงรายการวันที่ย้อนหลัง 30 วันที่มีการสร้างสล็อตไว้ เพื่อใช้ทำแม่แบบ
         async function loadRecentDatesForTemplate() {
             const templateSelect = document.getElementById('source-template-date');
             templateSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
@@ -356,7 +455,7 @@
                 .order('date', { ascending: false });
 
             if (error || !data || data.length === 0) {
-                templateSelect.innerHTML = '<option value="">ไม่มีสล็อตเวลาที่พบบันทึกไว้ใน 30 วันที่ผ่านมา</option>';
+                templateSelect.innerHTML = '<option value="">ไม่มีสล็อตเวลาใน 30 วันย้อนหลัง</option>';
                 return;
             }
 
@@ -375,12 +474,14 @@
             document.getElementById('slot-count-badge').innerText = `${slotsData.length} รอบ`;
             container.innerHTML = '';
 
+            const isPast = isPastDate(currentSelectedDate);
+
             if (slotsData.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
                         <p class="text-3xl mb-2">😴</p>
                         <p class="text-sm font-semibold text-gray-600">ยังไม่มีการเปิดรอบเวลาจองในวันนี้</p>
-                        <p class="text-xs text-gray-400 mt-1">สามารถเลือกชั่วโมง-นาที หรือใช้เมนูคัดลอกรอบเวลาด้านซ้ายได้เลยครับ</p>
+                        <p class="text-xs text-gray-400 mt-1">${isPast ? 'วันย้อนหลังไม่มีประวัติรอบเวลาจอง' : 'สามารถเลือกชั่วโมง-นาที หรือใช้เมนูคัดลอกรอบเวลาด้านซ้ายได้เลยครับ'}</p>
                     </div>
                 `;
                 return;
@@ -406,7 +507,7 @@
                                         <span class="text-gray-500 font-mono ml-2">📞 ${b.customer_phone}</span>
                                         ${b.service_type ? `<span class="ml-2 px-1.5 py-0.5 bg-white border border-indigo-200 rounded text-[10px] text-indigo-700">${b.service_type}</span>` : ''}
                                     </div>
-                                    <button onclick="cancelBooking('${b.id}', '${b.customer_name}', '${b.customer_phone}', '${slot.start_time.substring(0,5)}') " class="text-red-500 hover:text-red-700 text-[11px] font-medium cursor-pointer">ยกเลิกจอง</button>
+                                    ${!isPast ? `<button onclick="cancelBooking('${b.id}', '${b.customer_name}', '${b.customer_phone}', '${slot.start_time.substring(0,5)}') " class="text-red-500 hover:text-red-700 text-[11px] font-medium cursor-pointer">ยกเลิกจอง</button>` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -427,12 +528,14 @@
                             </span>
                         </div>
 
+                        ${!isPast ? `
                         <div class="flex items-center gap-2">
                             <button onclick="toggleSlotStatus('${slot.id}', ${!slot.is_open}, '${slot.start_time.substring(0,5)}') " class="px-2.5 py-1 text-xs font-medium rounded-lg border ${slot.is_open ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'} transition cursor-pointer">
                                 ${slot.is_open ? 'ปิดรับ' : 'เปิดรับ'}
                             </button>
                             <button onclick="deleteSlot('${slot.id}', '${slot.start_time.substring(0,5)}-${slot.end_time.substring(0,5)}') " class="p-1 text-gray-400 hover:text-red-600 transition cursor-pointer">🗑️</button>
                         </div>
+                        ` : ''}
                     </div>
                     ${bookingsListHtml}
                 `;
@@ -440,8 +543,6 @@
             });
         }
 
-        // --- ฟังก์ชันเช็คเวลาคลาดเคลื่อน/ซ้อนทับกัน (Overlapping Check) ---
-        // เงื่อนไข: ซ้อนกันเมื่อ (StartA < EndB) AND (EndA > StartB)
         function checkTimeOverlap(newStart, newEnd, existingSlots) {
             return existingSlots.some(slot => {
                 const existStart = slot.start_time;
@@ -450,9 +551,13 @@
             });
         }
 
-        // --- สร้างรอบเวลาใหม่จากฟอร์ม ---
         document.getElementById('slot-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isPastDate(currentSelectedDate)) {
+                alert("🔒 ไม่สามารถสร้างสล็อตในวันที่ย้อนหลังได้ครับ!");
+                return;
+            }
+
             const startH = document.getElementById('start-hour').value;
             const startM = document.getElementById('start-min').value;
             const endH = document.getElementById('end-hour').value;
@@ -467,7 +572,6 @@
                 return;
             }
 
-            // เช็คเวลาซ้อนทับในวันเดียวกัน
             if (checkTimeOverlap(startTime, endTime, slotsData)) {
                 alert(`⚠️ ไม่สามารถสร้างรอบเวลา ${startH}:${startM} - ${endH}:${endM} น. ได้!\nเนื่องจากมีช่วงเวลาซ้อนทับกับรอบที่เปิดไว้อยู่แล้วครับ`);
                 return;
@@ -489,8 +593,12 @@
             }
         });
 
-        // --- ปุ่มสร้างรอบอัตโนมัติ 09:00 - 21:00 น. ---
         document.getElementById('btn-quick-generate').addEventListener('click', async () => {
+            if (isPastDate(currentSelectedDate)) {
+                alert("🔒 ไม่สามารถสร้างรอบเวลาในวันที่ย้อนหลังได้ครับ!");
+                return;
+            }
+
             if (!confirm(`ต้องการสร้างรอบเวลามาตรฐาน 12 รอบ (09:00 - 21:00 น.) สำหรับวันที่ ${currentSelectedDate} ใช่ไหมครับ?`)) return;
 
             const defaultSlots = [];
@@ -500,7 +608,6 @@
                 const start = `${String(hour).padStart(2, '0')}:00:00`;
                 const end = `${String(hour + 1).padStart(2, '0')}:00:00`;
                 
-                // กรองไม่ใส่รอบที่ทับกับที่มีอยู่
                 if (checkTimeOverlap(start, end, slotsData)) {
                     overlapCount++;
                     continue;
@@ -532,8 +639,35 @@
             }
         });
 
-        // --- ฟังก์ชัน คัดลอก Slot เวลาแม่แบบลงวันที่ปัจจุบัน/ล่วงหน้า ---
+        // ลบสล็อตทั้งหมดของวันปัจจุบัน/อนาคต
+        async function deleteAllSlotsOfDay() {
+            if (isPastDate(currentSelectedDate)) {
+                alert("🔒 ไม่สามารถลบสล็อตของวันที่ย้อนหลังได้ครับ!");
+                return;
+            }
+
+            if (confirm(`คุณแน่ใจนะครับ ว่าต้องการลบรอบเวลาทั้งหมดของวันที่ ${currentSelectedDate}?`)) {
+                const { error } = await _supabase
+                    .from('booking_slots')
+                    .delete()
+                    .eq('date', currentSelectedDate);
+
+                if (error) {
+                    alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
+                } else {
+                    await writeActivityLog("ลบสล็อตทั้งหมด", `ลบสล็อตเวลาทั้งหมดของวันที่ ${currentSelectedDate}`);
+                    loadDayData();
+                }
+            }
+        }
+
+        // คัดลอกสล็อตแม่แบบ พร้อมเช็ควันที่มีแผนเดิมแล้วและแจ้งเตือนก่อนทับ
         document.getElementById('btn-copy-template').addEventListener('click', async () => {
+            if (isPastDate(currentSelectedDate)) {
+                alert("🔒 ไม่สามารถคัดลอกสร้างสล็อตในวันที่ย้อนหลังได้ครับ!");
+                return;
+            }
+
             const templateDate = document.getElementById('source-template-date').value;
             const copyDaysCount = parseInt(document.getElementById('copy-days-count').value);
 
@@ -542,7 +676,6 @@
                 return;
             }
 
-            // ดึงสล็อตของวันแม่แบบ
             const { data: templateSlots, error } = await _supabase
                 .from('booking_slots')
                 .select('*')
@@ -553,60 +686,63 @@
                 return;
             }
 
-            if (!confirm(`ยืนยันคัดลอกสล็อตเวลาจำนวน ${templateSlots.length} รอบ จากวันที่ ${templateDate} ไปสร้างล่วงหน้า ${copyDaysCount} วัน (นับตั้งแต่วันที่สั่งการ ${currentSelectedDate})?`)) return;
+            // คำนวณช่วงวันที่เป้าหมายทั้งหมด
+            const baseDate = new Date(currentSelectedDate);
+            const targetDateStrings = [];
+            for (let d = 0; d < copyDaysCount; d++) {
+                const targetObj = new Date(baseDate);
+                targetObj.setDate(targetObj.getDate() + d);
+                targetDateStrings.push(targetObj.toISOString().split('T')[0]);
+            }
+
+            // ตรวจสอบวันที่มีการสร้างสล็อตไว้อยู่แล้ว
+            const { data: existingInTargets } = await _supabase
+                .from('booking_slots')
+                .select('date')
+                .in('date', targetDateStrings);
+
+            const datesWithExistingSlots = [...new Set((existingInTargets || []).map(item => item.date))];
+
+            if (datesWithExistingSlots.length > 0) {
+                const formattedExistingDates = datesWithExistingSlots.map(d => `${d} ${formatThaiDateString(d)}`).join('\n- ');
+                const confirmOverwrite = confirm(`⚠️ พบวันที่สล็อตถูกสร้างไว้อยู่แล้วดังนี้:\n- ${formattedExistingDates}\n\nคุณต้องการลบแผนเดิมของวันที่ระบุแล้วสร้างทับด้วยแม่แบบใหม่ (${templateDate}) ใช่ไหมครับ?`);
+                if (!confirmOverwrite) return;
+            } else {
+                if (!confirm(`ยืนยันคัดลอกสล็อตเวลา ${templateSlots.length} รอบ จากวันที่ ${templateDate} ไปสร้างล่วงหน้า ${copyDaysCount} วัน (เริ่ม ${currentSelectedDate})?`)) return;
+            }
 
             let totalCreated = 0;
-            let totalSkippedOverlap = 0;
 
-            const baseDate = new Date(currentSelectedDate);
+            for (const targetDateStr of targetDateStrings) {
+                // ลบสล็อตเดิมของวันนั้นออกก่อนหากเลือกทับ
+                if (datesWithExistingSlots.includes(targetDateStr)) {
+                    await _supabase.from('booking_slots').delete().eq('date', targetDateStr);
+                }
 
-            for (let dayOffset = 0; dayOffset < copyDaysCount; dayOffset++) {
-                const targetDateObj = new Date(baseDate);
-                targetDateObj.setDate(targetDateObj.getDate() + dayOffset);
-                const targetDateStr = targetDateObj.toISOString().split('T')[0];
+                // สร้างสล็อตชุดใหม่จากแม่แบบ
+                const newSlotsToInsert = templateSlots.map(tSlot => ({
+                    date: targetDateStr,
+                    start_time: tSlot.start_time,
+                    end_time: tSlot.end_time,
+                    max_capacity: tSlot.max_capacity,
+                    is_open: true
+                }));
 
-                // ดึงสล็อตที่มีอยู่ของวันเป้าหมายเพื่อเช็คซ้ำ
-                const { data: targetExisting } = await _supabase
-                    .from('booking_slots')
-                    .select('*')
-                    .eq('date', targetDateStr);
-                
-                const existingInTarget = targetExisting || [];
-                const newSlotsToInsert = [];
-
-                templateSlots.forEach(tSlot => {
-                    if (checkTimeOverlap(tSlot.start_time, tSlot.end_time, existingInTarget)) {
-                        totalSkippedOverlap++;
-                    } else {
-                        newSlotsToInsert.push({
-                            date: targetDateStr,
-                            start_time: tSlot.start_time,
-                            end_time: tSlot.end_time,
-                            max_capacity: tSlot.max_capacity,
-                            is_open: true
-                        });
-                    }
-                });
-
-                if (newSlotsToInsert.length > 0) {
-                    const { error: insErr } = await _supabase.from('booking_slots').insert(newSlotsToInsert);
-                    if (!insErr) {
-                        totalCreated += newSlotsToInsert.length;
-                    }
+                const { error: insErr } = await _supabase.from('booking_slots').insert(newSlotsToInsert);
+                if (!insErr) {
+                    totalCreated += newSlotsToInsert.length;
                 }
             }
 
-            let resultMsg = `🎉 คัดลอกและสร้างสล็อตเวลาสำเร็จรวม ${totalCreated} รอบ (สำหรับ ${copyDaysCount} วัน)`;
-            if (totalSkippedOverlap > 0) {
-                resultMsg += `\n⚠️ (เว้นการสร้างไป ${totalSkippedOverlap} รอบ เนื่องจากเวลาซ้อนทับกับที่มีอยู่เดิม)`;
-            }
-            alert(resultMsg);
-
-            await writeActivityLog("คัดลอกรอบเวลาแบบกลุ่ม", `คัดลอกแม่แบบจากวันที่ ${templateDate} ไปยัง ${copyDaysCount} วันข้างหน้า (สร้างเพิ่ม ${totalCreated} รอบ)`);
+            alert(`🎉 คัดลอกและสร้างสล็อตเวลาสำเร็จเรียบร้อย รวม ${totalCreated} รอบ (สำหรับ ${copyDaysCount} วัน)`);
+            await writeActivityLog("คัดลอกรอบเวลาแม่แบบ", `คัดลอกแม่แบบจากวันที่ ${templateDate} ไปสร้างทับล่วงหน้า ${copyDaysCount} วัน (นับจาก ${currentSelectedDate})`);
+            
             loadDayData();
+            updateMonthlyChart();
         });
 
         window.toggleSlotStatus = async function(id, newStatus, slotTime) {
+            if (isPastDate(currentSelectedDate)) return;
             const { error } = await _supabase.from('booking_slots').update({ is_open: newStatus }).eq('id', id);
             if (!error) {
                 await writeActivityLog("ปรับสถานะรอบเวลา", `${newStatus ? 'เปิดรับจอง' : 'ปิดรับจอง'} รอบเวลา ${slotTime} น. ประจำวันที่ ${currentSelectedDate}`);
@@ -615,6 +751,7 @@
         }
 
         window.deleteSlot = async function(id, timeRange) {
+            if (isPastDate(currentSelectedDate)) return;
             if (confirm(`ลบรอบเวลา ${timeRange} น. ใช่ไหมครับ? (รายการจองค้างไว้จะถูกลบไปด้วย)`)) {
                 const { error } = await _supabase.from('booking_slots').delete().eq('id', id);
                 if (!error) {
@@ -625,13 +762,103 @@
         }
 
         window.cancelBooking = async function(bookingId, custName, custPhone, slotTime) {
+            if (isPastDate(currentSelectedDate)) return;
             if (confirm(`ยกเลิกการจองของคุณ ${custName} (${custPhone}) ใช่ไหมครับ?`)) {
                 const { error } = await _supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
                 if (!error) {
                     await writeActivityLog("ยกเลิกการจองคิว", `ยกเลิกคิวของคุณ ${custName} (${custPhone}) ในรอบ ${slotTime} น. วันที่ ${currentSelectedDate}`);
                     loadDayData();
+                    updateMonthlyChart();
                 }
             }
+        }
+
+        // --- ระบบกราฟสรุปจำนวนคนจองรายวันประจำเดือน ---
+        async function updateMonthlyChart() {
+            const selectedMonth = parseInt(document.getElementById('chart-month-select').value);
+            const selectedYear = parseInt(document.getElementById('chart-year-select').value);
+
+            document.getElementById('chart-month-year-label').innerText = `${thaiFullMonths[selectedMonth]} พ.ศ. ${selectedYear + 543}`;
+
+            const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            const startDateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`;
+            const endDateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+
+            // 1. ดึงสล็อตในเดือนนั้น
+            const { data: monthSlots } = await _supabase
+                .from('booking_slots')
+                .select('id, date')
+                .gte('date', startDateStr)
+                .lte('date', endDateStr);
+
+            const slotMap = {};
+            (monthSlots || []).forEach(s => slotMap[s.id] = s.date);
+            const slotIds = Object.keys(slotMap);
+
+            const dailyCounts = Array(daysInMonth).fill(0);
+            let monthTotal = 0;
+
+            if (slotIds.length > 0) {
+                // 2. ดึงการจองคิวในสล็อตเหล่านั้น
+                const { data: monthBookings } = await _supabase
+                    .from('bookings')
+                    .select('slot_id, status')
+                    .in('slot_id', slotIds)
+                    .neq('status', 'cancelled');
+
+                (monthBookings || []).forEach(b => {
+                    const slotDate = slotMap[b.slot_id];
+                    if (slotDate) {
+                        const dayNum = parseInt(slotDate.split('-')[2]);
+                        if (dayNum >= 1 && dayNum <= daysInMonth) {
+                            dailyCounts[dayNum - 1]++;
+                            monthTotal++;
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('total-month-bookings').innerText = monthTotal;
+
+            // วาดกราฟ Chart.js
+            const labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
+            const ctx = document.getElementById('bookingChart').getContext('2d');
+
+            if (bookingChart) {
+                bookingChart.destroy();
+            }
+
+            bookingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนคนจอง (คิว)',
+                        data: dailyCounts,
+                        backgroundColor: '#6366F1',
+                        hoverBackgroundColor: '#4F46E5',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            title: { display: true, text: 'วันที่', font: { size: 11 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            title: { display: true, text: 'จำนวนคิว', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>

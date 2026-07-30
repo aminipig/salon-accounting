@@ -65,7 +65,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- ฟอร์มสร้างรอบเวลาใหม่ -->
+            <!-- ฟอร์มสร้างรอบเวลาใหม่ (ปรับเป็น Dropdown 15 นาที) -->
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <span>➕</span> สร้างช่วงเวลาเปิดรับจอง
@@ -74,11 +74,27 @@
                 <form id="slot-form" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">เวลาเริ่มต้น</label>
-                        <input type="time" id="start-time" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="start-hour" class="p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500"></select>
+                            <select id="start-min" class="p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500">
+                                <option value="00">:00</option>
+                                <option value="15">:15</option>
+                                <option value="30">:30</option>
+                                <option value="45">:45</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">เวลาสิ้นสุด</label>
-                        <input type="time" id="end-time" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="end-hour" class="p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500"></select>
+                            <select id="end-min" class="p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500">
+                                <option value="00">:00</option>
+                                <option value="15">:15</option>
+                                <option value="30">:30</option>
+                                <option value="45">:45</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">จำนวนคิวสูงสุดที่รับได้ต่อรอบ</label>
@@ -119,14 +135,17 @@
     <!-- Supabase Module Logic -->
     <script>
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInRefiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentSelectedDate = new Date().toISOString().split('T')[0];
         let slotsData = [];
         let bookingsData = [];
+        let currentUserData = null;
+        let hasLoggedSession = false;
 
         window.addEventListener('DOMContentLoaded', async () => {
+            initTimeDropdowns();
             document.getElementById('select-date').value = currentSelectedDate;
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
             document.getElementById('btn-logout').addEventListener('click', logoutUser);
@@ -143,19 +162,78 @@
             });
         });
 
+        // --- สร้างตัวเลือกชั่วโมง 00-24 ---
+        function initTimeDropdowns() {
+            const startHourSelect = document.getElementById('start-hour');
+            const endHourSelect = document.getElementById('end-hour');
+
+            for (let i = 0; i <= 24; i++) {
+                const hourStr = String(i).padStart(2, '0');
+                
+                const optStart = document.createElement('option');
+                optStart.value = hourStr;
+                optStart.innerText = `${hourStr} น.`;
+                if (i === 9) optStart.selected = true; // ค่าเริ่มต้น 09:00
+                startHourSelect.appendChild(optStart);
+
+                const optEnd = document.createElement('option');
+                optEnd.value = hourStr;
+                optEnd.innerText = `${hourStr} น.`;
+                if (i === 10) optEnd.selected = true; // ค่าเริ่มต้น 10:00
+                endHourSelect.appendChild(optEnd);
+            }
+        }
+
+        // --- ฟังก์ชันช่วยเหลือเกี่ยวกับ Log ---
+        function getThaiZoneISOString() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            };
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const parts = formatter.formatToParts(now);
+            const map = {};
+            parts.forEach(p => map[p.type] = p.value);
+            return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second}`;
+        }
+
+        async function writeActivityLog(actionType, details) {
+            try {
+                const userMeta = currentUserData?.user_metadata || {};
+                const currentUser = userMeta.full_name || userMeta.name || "Unknown Owner";
+                const currentEmail = currentUserData?.email || "Unknown Email"; 
+                const datetimeString = getThaiZoneISOString(); 
+                
+                await _supabase.from('activity_logs').insert([{
+                    user_name: currentUser, 
+                    user_email: currentEmail, 
+                    action: actionType,
+                    details: details,
+                    timestamp: datetimeString
+                }]);
+            } catch (e) {
+                console.error("ไม่สามารถบันทึก Log ได้: ", e);
+            }
+        }
+
+        // --- Auth & Session ---
         async function loginWithGoogle() {
             const redirectUrl = window.location.origin + window.location.pathname;
             await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectUrl } });
         }
 
         async function logoutUser() {
-            if (confirm("ต้องการออกจากระบบใช่ไหมครับ?")) {
+            if (confirm("ต้องการออกจากระบบจัดการเวลาจองใช่ไหมครับ?")) {
+                await writeActivityLog("ออกจากระบบ", "กดออกจากระบบจัดการเวลาจองคิว");
+                hasLoggedSession = false;
                 await _supabase.auth.signOut();
             }
         }
 
-        function handleAuthState(user) {
+        async function handleAuthState(user) {
             if (user) {
+                currentUserData = user;
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('top-navbar').classList.remove('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
@@ -164,14 +242,22 @@
                 document.getElementById('user-avatar').src = meta.avatar_url || meta.picture || "https://www.w3schools.com/howto/img_avatar.png";
                 document.getElementById('user-name').innerText = meta.full_name || "เจ้าของร้าน";
 
+                if (!hasLoggedSession) {
+                    hasLoggedSession = true;
+                    await writeActivityLog("เข้าสู่ระบบ", "เข้าใช้งานระบบจัดการเวลาจองคิวผ่าน Google Auth");
+                }
+
                 loadDayData();
             } else {
+                currentUserData = null;
+                hasLoggedSession = false;
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('top-navbar').classList.add('hidden');
                 document.getElementById('main-app').classList.add('hidden');
             }
         }
 
+        // --- Fetch & Render Data ---
         async function loadDayData() {
             document.getElementById('display-selected-date').innerText = currentSelectedDate;
             
@@ -212,7 +298,7 @@
                     <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
                         <p class="text-3xl mb-2">😴</p>
                         <p class="text-sm font-semibold text-gray-600">ยังไม่มีการเปิดรอบเวลาจองในวันนี้</p>
-                        <p class="text-xs text-gray-400 mt-1">สามารถกดสร้างรอบเวลาทางด้านซ้าย หรือใช้ปุ่มสร้างรอบอัตโนมัติได้เลยครับ</p>
+                        <p class="text-xs text-gray-400 mt-1">สามารถเลือกชั่วโมง-นาที แล้วกดสร้างรอบเวลาได้เลยครับ</p>
                     </div>
                 `;
                 return;
@@ -237,7 +323,7 @@
                                         <span class="text-gray-500 font-mono ml-2">📞 ${b.customer_phone}</span>
                                         ${b.service_type ? `<span class="ml-2 px-1.5 py-0.5 bg-white border border-indigo-200 rounded text-[10px] text-indigo-700">${b.service_type}</span>` : ''}
                                     </div>
-                                    <button onclick="cancelBooking('${b.id}')" class="text-red-500 hover:text-red-700 text-[11px] cursor-pointer">ยกเลิกจอง</button>
+                                    <button onclick="cancelBooking('${b.id}', '${b.customer_name}', '${b.customer_phone}', '${slot.start_time.substring(0,5)}') " class="text-red-500 hover:text-red-700 text-[11px] font-medium cursor-pointer">ยกเลิกจอง</button>
                                 </div>
                             `).join('')}
                         </div>
@@ -256,10 +342,10 @@
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <button onclick="toggleSlotStatus('${slot.id}', ${!slot.is_open})" class="px-2.5 py-1 text-xs font-medium rounded-lg border ${slot.is_open ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'} transition cursor-pointer">
+                            <button onclick="toggleSlotStatus('${slot.id}', ${!slot.is_open}, '${slot.start_time.substring(0,5)}') " class="px-2.5 py-1 text-xs font-medium rounded-lg border ${slot.is_open ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'} transition cursor-pointer">
                                 ${slot.is_open ? 'ปิดรับ' : 'เปิดรับ'}
                             </button>
-                            <button onclick="deleteSlot('${slot.id}')" class="p-1 text-gray-400 hover:text-red-600 transition cursor-pointer">🗑️</button>
+                            <button onclick="deleteSlot('${slot.id}', '${slot.start_time.substring(0,5)}-${slot.end_time.substring(0,5)}') " class="p-1 text-gray-400 hover:text-red-600 transition cursor-pointer">🗑️</button>
                         </div>
                     </div>
                     ${bookingsListHtml}
@@ -268,12 +354,22 @@
             });
         }
 
-        // --- Event handlers ---
+        // --- Actions with Log Recording ---
         document.getElementById('slot-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const startTime = document.getElementById('start-time').value;
-            const endTime = document.getElementById('end-time').value;
+            const startH = document.getElementById('start-hour').value;
+            const startM = document.getElementById('start-min').value;
+            const endH = document.getElementById('end-hour').value;
+            const endM = document.getElementById('end-min').value;
+            
+            const startTime = `${startH}:${startM}:00`;
+            const endTime = `${endH}:${endM}:00`;
             const maxCap = parseInt(document.getElementById('max-capacity').value);
+
+            if (startTime >= endTime) {
+                alert("เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุดครับ!");
+                return;
+            }
 
             const { error } = await _supabase.from('booking_slots').insert([{
                 date: currentSelectedDate,
@@ -283,10 +379,10 @@
                 is_open: true
             }]);
 
-            if (error) alert("สร้างสล็อตไม่สำเร็จ: " + error.message);
-            else {
-                document.getElementById('start-time').value = '';
-                document.getElementById('end-time').value = '';
+            if (error) {
+                alert("สร้างสล็อตไม่สำเร็จ: " + error.message);
+            } else {
+                await writeActivityLog("สร้างรอบเวลาจอง", `เปิดรอบจองวันที่ ${currentSelectedDate} เวลา ${startH}:${startM} - ${endH}:${endM} น. (รับสูงสุด ${maxCap} คิว)`);
                 loadDayData();
             }
         });
@@ -296,8 +392,8 @@
 
             const defaultSlots = [];
             for (let hour = 9; hour < 18; hour++) {
-                const start = `${String(hour).padStart(2, '0')}:00`;
-                const end = `${String(hour + 1).padStart(2, '0')}:00`;
+                const start = `${String(hour).padStart(2, '0')}:00:00`;
+                const end = `${String(hour + 1).padStart(2, '0')}:00:00`;
                 defaultSlots.push({
                     date: currentSelectedDate,
                     start_time: start,
@@ -308,26 +404,39 @@
             }
 
             const { error } = await _supabase.from('booking_slots').insert(defaultSlots);
-            if (error) alert("สร้างรอบอัตโนมัติไม่สำเร็จ: " + error.message);
-            else loadDayData();
+            if (error) {
+                alert("สร้างรอบอัตโนมัติไม่สำเร็จ: " + error.message);
+            } else {
+                await writeActivityLog("สร้างรอบเวลาอัตโนมัติ", `สร้างรอบมาตรฐาน 9 รอบ (09:00-18:00 น.) ประจำวันที่ ${currentSelectedDate}`);
+                loadDayData();
+            }
         });
 
-        window.toggleSlotStatus = async function(id, newStatus) {
-            await _supabase.from('booking_slots').update({ is_open: newStatus }).eq('id', id);
-            loadDayData();
-        }
-
-        window.deleteSlot = async function(id) {
-            if (confirm("ลบช่วงเวลานี้ใช่ไหมครับ? (การจองค้างไว้จะถูกลบไปด้วย)")) {
-                await _supabase.from('booking_slots').delete().eq('id', id);
+        window.toggleSlotStatus = async function(id, newStatus, slotTime) {
+            const { error } = await _supabase.from('booking_slots').update({ is_open: newStatus }).eq('id', id);
+            if (!error) {
+                await writeActivityLog("ปรับสถานะรอบเวลา", `${newStatus ? 'เปิดรับจอง' : 'ปิดรับจอง'} รอบเวลา ${slotTime} น. ประจำวันที่ ${currentSelectedDate}`);
                 loadDayData();
             }
         }
 
-        window.cancelBooking = async function(bookingId) {
-            if (confirm("ยกเลิกการจองของลูกค้ารายนี้ใช่ไหมครับ?")) {
-                await _supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
-                loadDayData();
+        window.deleteSlot = async function(id, timeRange) {
+            if (confirm(`ลบรอบเวลา ${timeRange} น. ใช่ไหมครับ? (รายการจองค้างไว้จะถูกลบไปด้วย)`)) {
+                const { error } = await _supabase.from('booking_slots').delete().eq('id', id);
+                if (!error) {
+                    await writeActivityLog("ลบรอบเวลาจอง", `ลบรอบเวลา ${timeRange} น. ประจำวันที่ ${currentSelectedDate}`);
+                    loadDayData();
+                }
+            }
+        }
+
+        window.cancelBooking = async function(bookingId, custName, custPhone, slotTime) {
+            if (confirm(`ยกเลิกการจองของคุณ ${custName} (${custPhone}) ใช่ไหมครับ?`)) {
+                const { error } = await _supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+                if (!error) {
+                    await writeActivityLog("ยกเลิกการจองคิว", `ยกเลิกคิวของคุณ ${custName} (${custPhone}) ในรอบ ${slotTime} น. วันที่ ${currentSelectedDate}`);
+                    loadDayData();
+                }
             }
         }
     </script>

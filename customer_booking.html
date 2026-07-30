@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-900 pb-20">
 
-    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Google Account & LINE Login เท่านั้น) -->
+    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Google Account & LINE Login) -->
     <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-linear-to-b from-indigo-600 via-purple-600 to-indigo-800">
         <div class="bg-white p-7 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
             <div class="text-6xl mb-3">💇‍♀️</div>
@@ -92,7 +92,6 @@
 
         <!-- หน้าที่ 1: ตารางเลือกรอบจอง -->
         <div id="view-booking-section" class="px-4 space-y-4">
-            <!-- ตัวเลื่อนเลือกวัน -->
             <div class="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                 <button id="btn-cust-prev-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">◀</button>
                 <div class="text-center">
@@ -103,7 +102,6 @@
                 <button id="btn-cust-next-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">▶</button>
             </div>
 
-            <!-- รายการรอบสล็อตที่ว่าง -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between px-1">
                     <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider">ช่วงเวลาที่เปิดรับจอง</h3>
@@ -117,7 +115,6 @@
 
         <!-- หน้าที่ 2: คิวที่จองไว้ & ประวัติ 30 วัน -->
         <div id="view-history-section" class="px-4 space-y-4 hidden">
-            <!-- คิวจองล่วงหน้าที่กำลังจะมาถึง -->
             <div>
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ (ยกเลิกเพื่อจองใหม่ได้)</h3>
                 <div id="active-bookings-list" class="space-y-3">
@@ -125,7 +122,6 @@
                 </div>
             </div>
 
-            <!-- ประวัติย้อนหลัง 30 วัน -->
             <div class="pt-4 border-t border-gray-200">
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📜 ประวัติการใช้งานย้อนหลัง (ผ่านแล้ว/ยกเลิก)</h3>
                 <div id="past-bookings-list" class="space-y-2.5">
@@ -198,11 +194,11 @@
     <script>
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
-        const LIFF_ID = "2010902328-ujV1R7Rw"; // 🌟 ระบุ LIFF ID เรียบร้อยแล้ว
+        const LIFF_ID = "2010902328-ujV1R7Rw";
 
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null; // { id, name, phone, email, avatar, provider }
+        let currentUser = null; 
         let currentSelectedDate = new Date().toISOString().split('T')[0];
         let daySlotsData = [];
         let dayBookingsData = [];
@@ -214,7 +210,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('cust-select-date').value = currentSelectedDate;
 
-            // 1. ตรวจสอบการเข้าใช้งานผ่าน Supabase Auth (Google)
+            // 1. ตรวจสอบ Google Auth (Supabase)
             const { data: { session } } = await _supabase.auth.getSession();
             if (session?.user) {
                 const meta = session.user.user_metadata || {};
@@ -228,8 +224,8 @@
                 };
             }
 
-            // 2. ตรวจสอบและเปิดใช้งาน LINE LIFF
-            initLineLiff();
+            // 2. ตรวจสอบ LINE LIFF
+            await initLineLiffSafe();
 
             checkUserLoginState();
 
@@ -276,9 +272,9 @@
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
 
-        // ระบบ LINE LIFF
-        async function initLineLiff() {
-            if (!LIFF_ID || LIFF_ID === "YOUR_LIFF_ID_HERE") return;
+        // ระบบ LINE LIFF แบบ Safe Initialization
+        async function initLineLiffSafe() {
+            if (!window.liff || !LIFF_ID || LIFF_ID === "YOUR_LIFF_ID_HERE") return;
             try {
                 await liff.init({ liffId: LIFF_ID });
                 if (liff.isLoggedIn()) {
@@ -291,22 +287,34 @@
                         avatar: profile.pictureUrl || null,
                         provider: 'line'
                     };
-                    checkUserLoginState();
                 }
             } catch (err) {
-                console.error("LIFF Init Error:", err);
+                console.warn("LINE LIFF Init Warning:", err.message);
             }
         }
 
         async function loginWithLine() {
-            if (!LIFF_ID || LIFF_ID === "YOUR_LIFF_ID_HERE") {
-                alert("⚠️ กรุณาตรวจสอบ LIFF ID ในระบบก่อนใช้งาน LINE Login ครับ");
+            if (!window.liff) {
+                alert("ไม่สามารถเชื่อมต่อ LINE SDK ได้ กรุณาลองใหม่อีกครั้งครับ");
                 return;
             }
-            if (window.liff) {
+            try {
                 if (!liff.isLoggedIn()) {
                     liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    currentUser = {
+                        id: profile.userId,
+                        name: profile.displayName || "ลูกค้า LINE",
+                        phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
+                        email: null,
+                        avatar: profile.pictureUrl || null,
+                        provider: 'line'
+                    };
+                    checkUserLoginState();
                 }
+            } catch (err) {
+                alert("LINE Login Error: " + err.message);
             }
         }
 
@@ -318,9 +326,11 @@
         async function logoutCustomer() {
             if (confirm("ต้องการออกจากระบบใช่ไหมครับ?")) {
                 currentUser = null;
-                if (window.liff && liff.isLoggedIn()) {
-                    liff.logout();
-                }
+                try {
+                    if (window.liff && liff.isLoggedIn()) {
+                        liff.logout();
+                    }
+                } catch(e) {}
                 await _supabase.auth.signOut();
                 checkUserLoginState();
             }

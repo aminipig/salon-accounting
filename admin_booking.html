@@ -53,7 +53,7 @@
     <!-- 3. เนื้อหาหลัก -->
     <main id="main-app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
         
-        <!-- ตัวเลือกวันที่ทำงาน: วันที่สั่งการ: [ ◀ ] [ 07/30/2026 📅 ] [ ▶ ] -->
+        <!-- ตัวเลือกวันที่ทำงาน: วันที่สั่งการ -->
         <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-gray-900">จัดการรอบเวลาและตรวจสอบการจอง 📅</h1>
@@ -61,11 +61,11 @@
             </div>
             <div class="flex items-center gap-2">
                 <label for="select-date" class="font-medium text-sm text-gray-700 shrink-0">วันที่สั่งการ:</label>
-                <button id="btn-prev-day" class="p-2 border border-gray-300 hover:bg-gray-100 rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันก่อนหน้า">
+                <button id="btn-prev-day" class="p-2 border border-gray-300 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันก่อนหน้า">
                     ◀
                 </button>
                 <input type="date" id="select-date" class="p-2 border border-gray-300 rounded-xl bg-gray-50 text-sm font-semibold focus:bg-white focus:outline-indigo-500">
-                <button id="btn-next-day" class="p-2 border border-gray-300 hover:bg-gray-100 rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันถัดไป">
+                <button id="btn-next-day" class="p-2 border border-gray-300 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันถัดไป">
                     ▶
                 </button>
             </div>
@@ -136,9 +136,9 @@
 
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกวันที่เป็นแม่แบบ (ย้อนหลัง 30 วัน ถึงล่วงหน้า 90 วัน):</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกวันที่เป็นแม่แบบ (Default: วันปัจจุบัน / ย้อนหลัง 30 วัน ถึง +90 วัน):</label>
                             <select id="source-template-date" class="w-full p-2 border border-gray-300 rounded-xl text-xs bg-white font-medium focus:outline-indigo-500">
-                                <option value="">-- กำลังโหลดวันที่ย้อนหลัง --</option>
+                                <option value="">-- กำลังโหลดวันที่แม่แบบ --</option>
                             </select>
                         </div>
 
@@ -189,7 +189,7 @@
                                 รายการรอบเวลาประจำวันที่ <span id="display-selected-date" class="text-indigo-600 font-mono"></span>
                                 <span id="display-thai-date" class="text-indigo-800 font-normal text-base ml-1"></span>
                             </h3>
-                            <p id="past-date-warning" class="text-xs text-amber-600 font-medium mt-0.5 hidden">🔒 แสดงผลสำหรับดูประวัติเท่านั้น (สามารถจัดการสล็อตย้อนหลังสุดได้วันปัจจุบัน และไม่เกิน 90 วันล่วงหน้า)</p>
+                            <p id="past-date-warning" class="text-xs text-amber-600 font-medium mt-0.5 hidden">🔒 แสดงผลสำหรับดูประวัติเท่านั้น (จัดการสร้าง/แก้ไขได้เฉพาะวันปัจจุบัน ถึงล่วงหน้า 90 วัน)</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span id="slot-count-badge" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">0 รอบ</span>
@@ -262,7 +262,8 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             initTimeDropdowns();
-            initChartYearFilter(); // 🌟 ปรับ Dropdown ปีเป็นปีปัจจุบันย้อนหลังรวม 5 ปี
+            initDatePickerLimits(); // 🌟 ล็อกขอบเขตปฏิทิน (ต่ำสุด 1 ม.ค. 3 ปีย้อนหลัง / สูงสุด +90 วัน)
+            initChartYearFilter();   // 🌟 ปรับ Dropdown ปีเป็นปีปัจจุบันย้อนหลัง 3 ปี
             
             document.getElementById('select-date').value = currentSelectedDate;
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
@@ -300,12 +301,56 @@
             });
         });
 
+        // 🌟 ข้อที่ 1 & 2: กำหนดขอบเขตปฏิทิน Min/Max
+        function initDatePickerLimits() {
+            const dateInput = document.getElementById('select-date');
+            const now = new Date();
+            const currentYear = now.getFullYear();
+
+            // ล็อกต่ำสุด: 1 มกราคม ของ 3 ปีย้อนหลัง (เช่น ปีนี้ 2026 -> 2024-01-01)
+            const minYear = currentYear - 2; 
+            const minDateStr = `${minYear}-01-01`;
+
+            // ล็อกสูงสุด: วันปัจจุบัน + 90 วัน
+            const maxDateObj = new Date();
+            maxDateObj.setDate(maxDateObj.getDate() + 90);
+            const maxDateStr = maxDateObj.toISOString().split('T')[0];
+
+            dateInput.min = minDateStr;
+            dateInput.max = maxDateStr;
+        }
+
         function changeSelectedDateByOffset(offsetDays) {
+            const dateInput = document.getElementById('select-date');
             const currentObj = new Date(currentSelectedDate);
             currentObj.setDate(currentObj.getDate() + offsetDays);
-            currentSelectedDate = currentObj.toISOString().split('T')[0];
-            document.getElementById('select-date').value = currentSelectedDate;
+            const targetDateStr = currentObj.toISOString().split('T')[0];
+
+            // ตรวจสอบให้อยู่ภายใน min/max
+            if (dateInput.min && targetDateStr < dateInput.min) return;
+            if (dateInput.max && targetDateStr > dateInput.max) return;
+
+            currentSelectedDate = targetDateStr;
+            dateInput.value = currentSelectedDate;
             loadDayData();
+        }
+
+        function updatePrevNextButtonStates() {
+            const dateInput = document.getElementById('select-date');
+            const prevBtn = document.getElementById('btn-prev-day');
+            const nextBtn = document.getElementById('btn-next-day');
+
+            if (dateInput.min && currentSelectedDate <= dateInput.min) {
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.disabled = false;
+            }
+
+            if (dateInput.max && currentSelectedDate >= dateInput.max) {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
         }
 
         function initTimeDropdowns() {
@@ -329,7 +374,7 @@
             }
         }
 
-        // 🌟 ข้อที่ 2: Dropdown ปีปัจจุบัน และย้อนหลังไปอีก 4 ปี (รวมปีปัจจุบัน = 5 ปี)
+        // 🌟 ข้อที่ 3: Dropdown ปีของกราฟ เอาปีปัจจุบัน และย้อนหลังได้ 3 ปี (ปีปัจจุบัน, -1 ปี, -2 ปี)
         function initChartYearFilter() {
             const now = new Date();
             const monthSelect = document.getElementById('chart-month-select');
@@ -339,7 +384,8 @@
             const currentYear = now.getFullYear();
 
             yearSelect.innerHTML = '';
-            for (let i = 0; i < 5; i++) {
+            // รวมปีปัจจุบัน และย้อนหลังไปอีก 2 ปี (รวมเป็น 3 ปี)
+            for (let i = 0; i < 3; i++) {
                 const y = currentYear - i;
                 const opt = document.createElement('option');
                 opt.value = y;
@@ -496,6 +542,7 @@
             document.getElementById('display-selected-date').innerText = currentSelectedDate;
             document.getElementById('display-thai-date').innerText = formatThaiDateString(currentSelectedDate);
             
+            updatePrevNextButtonStates();
             const dateStatus = checkDateEditableStatus(currentSelectedDate);
 
             if (!dateStatus.editable) {
@@ -547,10 +594,12 @@
             }
         }
 
-        // 🌟 ข้อที่ 3: โหลดแม่แบบตั้งแต่ย้อนหลัง 30 วัน จนถึงอนาคต 90 วัน จากวันปัจจุบัน
+        // 🌟 ข้อที่ 4: Default แม่แบบเป็น "วันปัจจุบัน" ก่อน แล้วรองลงมาค่อยเป็น "วันก่อนหน้า"
         async function loadRecentDatesForTemplate() {
             const templateSelect = document.getElementById('source-template-date');
             templateSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
+
+            const todayStr = new Date().toISOString().split('T')[0];
 
             const date30DaysAgo = new Date();
             date30DaysAgo.setDate(date30DaysAgo.getDate() - 30);
@@ -579,24 +628,33 @@
             const uniqueDates = [...new Set(data.map(d => d.date))];
             templateSelect.innerHTML = '';
             
-            let hasSelectedYesterday = false;
+            let selectedValue = null;
 
             uniqueDates.forEach((dateStr) => {
                 const opt = document.createElement('option');
                 opt.value = dateStr;
                 
+                const isToday = (dateStr === todayStr);
                 const isYesterday = (dateStr === yesterdayStr);
-                opt.innerText = `${dateStr} ${formatThaiDateString(dateStr)} ${isYesterday ? ' (เมื่อวาน - ค่าเริ่มต้น)' : ''}`;
-                
-                if (isYesterday) {
-                    opt.selected = true;
-                    hasSelectedYesterday = true;
-                }
-                
+
+                let labelSuffix = '';
+                if (isToday) labelSuffix = ' (วันปัจจุบัน - ค่าเริ่มต้น)';
+                else if (isYesterday) labelSuffix = ' (เมื่อวาน)';
+
+                opt.innerText = `${dateStr} ${formatThaiDateString(dateStr)}${labelSuffix}`;
                 templateSelect.appendChild(opt);
+
+                // ลอจิกเลือก Default: ให้ความสำคัญกับ "วันปัจจุบัน" ก่อนอันดับแรก
+                if (isToday) {
+                    selectedValue = todayStr;
+                } else if (!selectedValue && isYesterday) {
+                    selectedValue = yesterdayStr;
+                }
             });
 
-            if (!hasSelectedYesterday && uniqueDates.length > 0) {
+            if (selectedValue) {
+                templateSelect.value = selectedValue;
+            } else if (uniqueDates.length > 0) {
                 templateSelect.options[0].selected = true;
             }
         }

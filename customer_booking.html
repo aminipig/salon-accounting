@@ -218,6 +218,7 @@
         let dayBookingsData = [];
         let myActiveBookings = [];
         let selectedSlotForBooking = null;
+        let hasLoggedCustomerSession = false;
 
         const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
@@ -264,6 +265,37 @@
             });
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
+
+        function getThaiZoneISOString() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            };
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const parts = formatter.formatToParts(now);
+            const map = {};
+            parts.forEach(p => map[p.type] = p.value);
+            return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second}`;
+        }
+
+        // 🌟 ฟังก์ชันบันทึก Activity Log ฝั่งลูกค้า
+        async function writeCustomerActivityLog(actionType, details) {
+            try {
+                if (!currentUser) return;
+                const datetimeString = getThaiZoneISOString(); 
+                
+                await _supabase.from('activity_logs').insert([{
+                    user_name: `${currentUser.name} (ลูกค้า)`, 
+                    user_email: currentUser.email, 
+                    action: actionType,
+                    details: details,
+                    timestamp: datetimeString
+                }]);
+            } catch (e) {
+                console.error("ไม่สามารถบันทึก Log ได้: ", e);
+            }
+        }
 
         function initCustomerDatePickerLimits() {
             const dateInput = document.getElementById('cust-select-date');
@@ -312,7 +344,7 @@
             }
         }
 
-        function handleUserSession(user) {
+        async function handleUserSession(user) {
             if (user) {
                 const meta = user.user_metadata || {};
                 const provider = user.app_metadata?.provider || 'google';
@@ -324,8 +356,14 @@
                     avatar: meta.avatar_url || meta.picture || null,
                     provider: provider
                 };
+
+                if (!hasLoggedCustomerSession) {
+                    hasLoggedCustomerSession = true;
+                    await writeCustomerActivityLog("เข้าสู่ระบบ (ลูกค้า)", `เข้าใช้งานระบบจองคิวผ่าน ${provider.toUpperCase()}`);
+                }
             } else {
                 currentUser = null;
+                hasLoggedCustomerSession = false;
             }
             checkUserLoginState();
         }
@@ -361,7 +399,9 @@
 
         async function logoutCustomer() {
             if (confirm("ต้องการออกจากระบบใช่ไหมครับ?")) {
+                await writeCustomerActivityLog("ออกจากระบบ (ลูกค้า)", "กดออกจากระบบจองคิว");
                 currentUser = null;
+                hasLoggedCustomerSession = false;
                 await _supabase.auth.signOut();
                 checkUserLoginState();
             }
@@ -400,7 +440,7 @@
             document.getElementById('phone-setup-modal').classList.remove('hidden');
         }
 
-        function handlePhoneSetupSubmit(e) {
+        async function handlePhoneSetupSubmit(e) {
             e.preventDefault();
             const phone = document.getElementById('setup-phone-input').value.trim();
             if (phone.length < 9) {
@@ -408,11 +448,17 @@
                 return;
             }
 
+            const oldPhone = currentUser.phone;
             currentUser.phone = phone;
             localStorage.setItem(`cust_phone_${currentUser.id}`, phone);
             
             document.getElementById('phone-setup-modal').classList.add('hidden');
             alert("อัปเดตเบอร์โทรศัพท์ติดต่อเรียบร้อยครับ!");
+
+            // 🌟 บันทึก Log การบันทึก/แก้ไขเบอร์โทร
+            const actionMsg = oldPhone ? `แก้ไขเบอร์โทรศัพท์ติดต่อ จาก (${oldPhone}) เป็น (${phone})` : `บันทึกเบอร์โทรศัพท์แรกเข้า (${phone})`;
+            await writeCustomerActivityLog("จัดการเบอร์โทรศัพท์", actionMsg);
+
             loadCustomerDashboardData();
         }
 
@@ -599,7 +645,6 @@
             document.getElementById('modal-cust-name-display').innerText = currentUser.name;
             document.getElementById('modal-cust-phone-display').innerText = currentUser.phone;
 
-            // 🌟 ตั้งค่าให้ Dropdown กลับมาที่ "สระ-ไดร์" และซ่อนกล่องพิมพ์บริการเองทุกครั้งที่เปิด Modal
             const serviceSelect = document.getElementById('modal-service-select');
             serviceSelect.value = 'สระ-ไดร์';
             document.getElementById('custom-service-container').classList.add('hidden');
@@ -608,7 +653,6 @@
             document.getElementById('booking-modal').classList.remove('hidden');
         }
 
-        // 🌟 ฟังก์ชันปิด Modal พร้อมคืนค่าบริการเป็น "สระ-ไดร์"
         function closeModal() {
             document.getElementById('booking-modal').classList.add('hidden');
             selectedSlotForBooking = null;
@@ -619,7 +663,7 @@
             document.getElementById('modal-custom-service').value = '';
         }
 
-        // 🌟 ฟังก์ชันส่งข้อมูลจองคิว พร้อมรีเซ็ตบริการกลับเป็น "สระ-ไดร์"
+        // 🌟 บันทึกการจอง พร้อมเพิ่ม Activity Log
         async function submitBooking(e) {
             e.preventDefault();
             if (!selectedSlotForBooking) return;
@@ -644,7 +688,12 @@
                 alert("เกิดข้อผิดพลาดในการจอง: " + error.message);
             } else {
                 alert("🎉 จองคิวสำเร็จเรียบร้อยแล้วครับ! ทางร้านสระผมคุณส้มยินดีให้บริการครับ");
-                closeModal(); // ปิดและรีเซ็ตค่ากลับเป็น "สระ-ไดร์"
+                
+                // 🌟 บันทึก Log การจองคิว
+                const timeText = `${selectedSlotForBooking.start_time.substring(0,5)} - ${selectedSlotForBooking.end_time.substring(0,5)} น.`;
+                await writeCustomerActivityLog("จองคิวสำเร็จ", `จองคิววันที่ ${selectedSlotForBooking.date} เวลา ${timeText} | บริการ: ${service} (เบอร์: ${currentUser.phone})`);
+
+                closeModal();
                 loadCustomerDashboardData();
             }
         }
@@ -701,7 +750,7 @@
                             <p class="text-xs text-slate-600 font-bold mt-0.5">✂️ บริการ: ${b.service_type}</p>
                             <p class="text-[11px] text-slate-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
                         </div>
-                        <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}', '${b.booking_slots.start_time.substring(0,5)}')" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-2xl text-xs font-black border border-sky-200 transition cursor-pointer shrink-0 active:scale-95">
+                        <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}', '${b.booking_slots.start_time.substring(0,5)}', '${b.service_type}')" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-2xl text-xs font-black border border-sky-200 transition cursor-pointer shrink-0 active:scale-95">
                             ยกเลิกคิว
                         </button>
                     `;
@@ -732,13 +781,18 @@
             }
         }
 
-        window.cancelMyBooking = async function(bookingId, bookingDate, bookingTime) {
+        // 🌟 บันทึก Log เมื่อลูกค้าวิธีกดยกเลิกคิว
+        window.cancelMyBooking = async function(bookingId, bookingDate, bookingTime, serviceType) {
             if (confirm(`คุณต้องการยกเลิกคิวการจองวันที่ ${bookingDate} เวลา ${bookingTime} น. ใช่ไหมครับ?`)) {
                 const { error } = await _supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
                 if (error) {
                     alert("ยกเลิกคิวไม่สำเร็จ: " + error.message);
                 } else {
                     alert("ยกเลิกคิวเรียบร้อยครับ สามารถเลือกจองสล็อตใหม่ได้เลยครับ");
+
+                    // 🌟 บันทึก Log การยกเลิกคิว
+                    await writeCustomerActivityLog("ยกเลิกคิว (ลูกค้า)", `ยกเลิกคิววันที่ ${bookingDate} เวลา ${bookingTime} น. (บริการ: ${serviceType})`);
+
                     loadCustomerDashboardData();
                     loadCustomerHistoryData();
                 }

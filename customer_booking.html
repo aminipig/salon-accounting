@@ -55,7 +55,12 @@
                 <img id="user-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full border-2 border-indigo-400 bg-gray-700 hidden shrink-0 object-cover">
                 <div>
                     <h2 class="font-black text-sm tracking-tight">ร้านสระผมคุณส้ม</h2>
-                    <p id="display-user-info" class="text-[11px] text-indigo-300 font-medium truncate max-w-[180px]">กำลังโหลด...</p>
+                    <div class="flex items-center gap-1.5">
+                        <p id="display-user-info" class="text-[11px] text-indigo-300 font-medium truncate max-w-[130px]">กำลังโหลด...</p>
+                        <button id="btn-open-edit-phone" class="text-[10px] bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 px-1.5 py-0.5 rounded border border-indigo-700/60 font-bold transition cursor-pointer" title="แก้ไขเบอร์โทรศัพท์">
+                            ✏️ แก้ไขเบอร์
+                        </button>
+                    </div>
                 </div>
             </div>
             <button id="btn-customer-logout" class="text-xs text-red-400 bg-red-950/50 hover:bg-red-900/60 px-2.5 py-1.5 rounded-xl border border-red-800/50 font-bold transition cursor-pointer">
@@ -92,6 +97,7 @@
 
         <!-- หน้าที่ 1: ตารางเลือกรอบจอง -->
         <div id="view-booking-section" class="px-4 space-y-4">
+            <!-- ตัวเลื่อนเลือกวัน -->
             <div class="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                 <button id="btn-cust-prev-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">◀</button>
                 <div class="text-center">
@@ -102,6 +108,7 @@
                 <button id="btn-cust-next-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">▶</button>
             </div>
 
+            <!-- รายการรอบสล็อตที่ว่าง -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between px-1">
                     <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider">ช่วงเวลาที่เปิดรับจอง</h3>
@@ -131,11 +138,11 @@
         </div>
     </div>
 
-    <!-- Modal 1: บังคับกรอกเบอร์โทรศัพท์ครั้งแรกหลัง Login -->
+    <!-- Modal 1: บันทึก / แก้ไขเบอร์โทรศัพท์ -->
     <div id="phone-setup-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center">
             <div class="text-5xl">📱</div>
-            <h3 class="text-lg font-black text-gray-900">บันทึกเบอร์โทรศัพท์สำหรับติดต่อ</h3>
+            <h3 class="text-lg font-black text-gray-900" id="phone-modal-title">บันทึกเบอร์โทรศัพท์สำหรับติดต่อ</h3>
             <p class="text-xs text-gray-500">กรุณาระบุเบอร์โทรศัพท์มือถือ เพื่อให้ทางร้านสามารถโทรแจ้งยืนยันคิวจองได้ครับ</p>
 
             <form id="phone-setup-form" class="space-y-3 text-left">
@@ -143,9 +150,14 @@
                     <label class="block text-xs font-bold text-gray-700 mb-1">เบอร์โทรศัพท์มือถือ</label>
                     <input type="tel" id="setup-phone-input" required placeholder="0812345678" maxlength="10" pattern="[0-9]{9,10}" class="w-full p-3 border border-gray-300 rounded-xl text-base font-mono font-bold text-center tracking-widest focus:outline-indigo-500 bg-gray-50">
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl text-sm transition cursor-pointer shadow-md">
-                    บันทึกข้อมูลเบอร์โทร 🚀
-                </button>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-cancel-phone-edit" class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer hidden">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl text-sm transition cursor-pointer shadow-md">
+                        บันทึกเบอร์โทร 🚀
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -198,7 +210,7 @@
 
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null; 
+        let currentUser = null; // { id, name, phone, email, avatar, provider }
         let currentSelectedDate = new Date().toISOString().split('T')[0];
         let daySlotsData = [];
         let dayBookingsData = [];
@@ -224,9 +236,6 @@
                 };
             }
 
-            // 2. ตรวจสอบ LINE LIFF
-            await initLineLiffSafe();
-
             checkUserLoginState();
 
             _supabase.auth.onAuthStateChange((_event, session) => {
@@ -249,6 +258,10 @@
             document.getElementById('btn-login-line').addEventListener('click', loginWithLine);
             document.getElementById('btn-customer-logout').addEventListener('click', logoutCustomer);
 
+            document.getElementById('btn-open-edit-phone').addEventListener('click', openEditPhoneModal);
+            document.getElementById('btn-cancel-phone-edit').addEventListener('click', () => {
+                document.getElementById('phone-setup-modal').classList.add('hidden');
+            });
             document.getElementById('phone-setup-form').addEventListener('submit', handlePhoneSetupSubmit);
 
             document.getElementById('btn-cust-prev-day').addEventListener('click', () => changeDateOffset(-1));
@@ -272,36 +285,21 @@
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
 
-        // ระบบ LINE LIFF แบบ Safe Initialization
-        async function initLineLiffSafe() {
-            if (!window.liff || !LIFF_ID || LIFF_ID === "YOUR_LIFF_ID_HERE") return;
-            try {
-                await liff.init({ liffId: LIFF_ID });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    currentUser = {
-                        id: profile.userId,
-                        name: profile.displayName || "ลูกค้า LINE",
-                        phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
-                        email: null,
-                        avatar: profile.pictureUrl || null,
-                        provider: 'line'
-                    };
-                }
-            } catch (err) {
-                console.warn("LINE LIFF Init Warning:", err.message);
-            }
-        }
-
+        // ฟังก์ชันเข้าสู่ระบบด้วย LINE แบบปลอดภัย ไม่เกิด Error ป๊อปอัพ
         async function loginWithLine() {
             if (!window.liff) {
-                alert("ไม่สามารถเชื่อมต่อ LINE SDK ได้ กรุณาลองใหม่อีกครั้งครับ");
+                alert("ไม่สามารถเชื่อมต่อ LINE SDK ได้ กรุณาลองเปิดอีกครั้งครับ");
                 return;
             }
             try {
                 if (!liff.isLoggedIn()) {
-                    liff.login();
-                } else {
+                    await liff.init({ liffId: LIFF_ID });
+                    if (!liff.isLoggedIn()) {
+                        liff.login();
+                    }
+                }
+                
+                if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     currentUser = {
                         id: profile.userId,
@@ -314,7 +312,7 @@
                     checkUserLoginState();
                 }
             } catch (err) {
-                alert("LINE Login Error: " + err.message);
+                alert("การเชื่อมต่อ LINE เกิดปัญหา: " + err.message + "\n(กรุณาตรวจสอบว่าเปิดผ่าน LINE In-App Browser หรือตั้งค่า Endpoint URL ใน LINE Developers ถูกต้องแล้วหรือยัง)");
             }
         }
 
@@ -349,6 +347,8 @@
                 }
 
                 if (!currentUser.phone) {
+                    document.getElementById('phone-modal-title').innerText = "บันทึกเบอร์โทรศัพท์สำหรับติดต่อ";
+                    document.getElementById('btn-cancel-phone-edit').classList.add('hidden');
                     document.getElementById('phone-setup-modal').classList.remove('hidden');
                 } else {
                     document.getElementById('phone-setup-modal').classList.add('hidden');
@@ -358,6 +358,13 @@
                 document.getElementById('customer-login-screen').classList.remove('hidden');
                 document.getElementById('customer-main-app').classList.add('hidden');
             }
+        }
+
+        function openEditPhoneModal() {
+            document.getElementById('phone-modal-title').innerText = "แก้ไขเบอร์โทรศัพท์ติดต่อ";
+            document.getElementById('setup-phone-input').value = currentUser.phone || '';
+            document.getElementById('btn-cancel-phone-edit').classList.remove('hidden');
+            document.getElementById('phone-setup-modal').classList.remove('hidden');
         }
 
         function handlePhoneSetupSubmit(e) {
@@ -371,6 +378,7 @@
             currentUser.phone = phone;
             localStorage.setItem(`cust_phone_${currentUser.id}`, phone);
             document.getElementById('phone-setup-modal').classList.add('hidden');
+            alert("อัปเดตเบอร์โทรศัพท์ติดต่อเรียบร้อยครับ!");
             loadCustomerDashboardData();
         }
 
@@ -616,7 +624,7 @@
 
             let query = _supabase
                 .from('bookings')
-                .select('id, service_type, status, created_at, booking_slots!inner(id, date, start_time, end_time)')
+                .select('id, service_type, status, created_at, customer_phone, customer_email, booking_slots!inner(id, date, start_time, end_time)')
                 .order('created_at', { ascending: false });
 
             if (currentUser.provider === 'google' && currentUser.email) {
@@ -657,6 +665,7 @@
                             <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 font-extrabold rounded-md text-[11px] border border-indigo-100">📅 ${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)})</span>
                             <p class="font-mono font-black text-base text-gray-900 mt-1.5">🕒 ${b.booking_slots.start_time.substring(0,5)} - ${b.booking_slots.end_time.substring(0,5)} น.</p>
                             <p class="text-xs text-gray-600 font-bold mt-0.5">✂️ บริการ: ${b.service_type}</p>
+                            <p class="text-[11px] text-gray-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
                         </div>
                         <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}', '${b.booking_slots.start_time.substring(0,5)}')" class="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-black border border-red-200 transition cursor-pointer shrink-0">
                             ยกเลิกคิว
@@ -678,6 +687,7 @@
                         <div>
                             <p class="font-black text-gray-800 font-mono">${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)}) | ${b.booking_slots.start_time.substring(0,5)} น.</p>
                             <p class="text-gray-500 font-bold mt-0.5">บริการ: ${b.service_type}</p>
+                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
                         </div>
                         <span class="px-2.5 py-1 rounded-lg text-[10px] font-black ${isCancelled ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-gray-100 text-gray-600 border border-gray-200'}">
                             ${isCancelled ? 'ยกเลิกแล้ว' : 'ผ่านไปแล้ว'}

@@ -180,7 +180,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">เลือกบริการที่ต้องการทำ</label>
                     <select id="modal-service-select" class="w-full p-3.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 font-bold focus:bg-white focus:outline-sky-500">
-                        <option value="สระ-ไดร์">สระ-ไดร์</option>
+                        <option value="สระ-ไดร์" selected>สระ-ไดร์</option>
                         <option value="ตัดผม">ตัดผม</option>
                         <option value="ทำสีผม">ทำสีผม</option>
                         <option value="ดัด/ยืดผม">ดัด/ยืดผม</option>
@@ -222,7 +222,7 @@
         const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
         window.addEventListener('DOMContentLoaded', async () => {
-            initCustomerDatePickerLimits(); // 🌟 ล็อกขอบเขตปฏิทินลูกค้า (-7 วัน ถึง +90 วัน)
+            initCustomerDatePickerLimits(); // ล็อกขอบเขตปฏิทินลูกค้า (-7 วัน ถึง +90 วัน)
             document.getElementById('cust-select-date').value = currentSelectedDate;
 
             // ตรวจสอบ Auth Session จาก Supabase
@@ -265,16 +265,13 @@
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
 
-        // 🌟 ข้อที่ 1: ตั้งค่าขอบเขตปฏิทินลูกค้า (ย้อนหลังไม่เกิน 7 วัน และ ล่วงหน้าไม่เกิน 90 วัน)
         function initCustomerDatePickerLimits() {
             const dateInput = document.getElementById('cust-select-date');
             
-            // Min: ย้อนหลังไม่เกิน 7 วัน
             const minDateObj = new Date();
             minDateObj.setDate(minDateObj.getDate() - 7);
             const minDateStr = minDateObj.toISOString().split('T')[0];
 
-            // Max: ล่วงหน้าไม่เกิน 90 วัน
             const maxDateObj = new Date();
             maxDateObj.setDate(maxDateObj.getDate() + 90);
             const maxDateStr = maxDateObj.toISOString().split('T')[0];
@@ -289,7 +286,6 @@
             d.setDate(d.getDate() + offset);
             const targetDateStr = d.toISOString().split('T')[0];
 
-            // ตรวจสอบให้อยู่ภายใน min/max
             if (dateInput.min && targetDateStr < dateInput.min) return;
             if (dateInput.max && targetDateStr > dateInput.max) return;
 
@@ -603,14 +599,27 @@
             document.getElementById('modal-cust-name-display').innerText = currentUser.name;
             document.getElementById('modal-cust-phone-display').innerText = currentUser.phone;
 
+            // 🌟 ตั้งค่าให้ Dropdown กลับมาที่ "สระ-ไดร์" และซ่อนกล่องพิมพ์บริการเองทุกครั้งที่เปิด Modal
+            const serviceSelect = document.getElementById('modal-service-select');
+            serviceSelect.value = 'สระ-ไดร์';
+            document.getElementById('custom-service-container').classList.add('hidden');
+            document.getElementById('modal-custom-service').value = '';
+
             document.getElementById('booking-modal').classList.remove('hidden');
         }
 
+        // 🌟 ฟังก์ชันปิด Modal พร้อมคืนค่าบริการเป็น "สระ-ไดร์"
         function closeModal() {
             document.getElementById('booking-modal').classList.add('hidden');
             selectedSlotForBooking = null;
+            
+            const serviceSelect = document.getElementById('modal-service-select');
+            serviceSelect.value = 'สระ-ไดร์';
+            document.getElementById('custom-service-container').classList.add('hidden');
+            document.getElementById('modal-custom-service').value = '';
         }
 
+        // 🌟 ฟังก์ชันส่งข้อมูลจองคิว พร้อมรีเซ็ตบริการกลับเป็น "สระ-ไดร์"
         async function submitBooking(e) {
             e.preventDefault();
             if (!selectedSlotForBooking) return;
@@ -635,12 +644,11 @@
                 alert("เกิดข้อผิดพลาดในการจอง: " + error.message);
             } else {
                 alert("🎉 จองคิวสำเร็จเรียบร้อยแล้วครับ! ทางร้านสระผมคุณส้มยินดีให้บริการครับ");
-                closeModal();
+                closeModal(); // ปิดและรีเซ็ตค่ากลับเป็น "สระ-ไดร์"
                 loadCustomerDashboardData();
             }
         }
 
-        // 🌟 ข้อที่ 2: โหลดประวัติย้อนหลังในเมนู "คิวของฉัน" กรองย้อนหลังไม่เกิน 90 วัน
         async function loadCustomerHistoryData() {
             const activeContainer = document.getElementById('active-bookings-list');
             const pastContainer = document.getElementById('past-bookings-list');
@@ -648,7 +656,6 @@
             activeContainer.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center font-medium">🔄 กำลังโหลดข้อมูลคิว...</p>';
             pastContainer.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center font-medium">🔄 กำลังโหลดประวัติย้อนหลัง...</p>';
 
-            // คำนวณขอบเขตรวันที่ย้อนหลัง 90 วัน
             const now = new Date();
             const past90DaysObj = new Date();
             past90DaysObj.setDate(past90DaysObj.getDate() - 90);
@@ -659,7 +666,7 @@
                 .select('id, service_type, status, created_at, customer_phone, customer_email, booking_slots!inner(id, date, start_time, end_time)')
                 .order('created_at', { ascending: false })
                 .eq('customer_email', currentUser.email)
-                .gte('booking_slots.date', past90DaysStr); // 🌟 กรองย้อนหลังไม่เกิน 90 วัน
+                .gte('booking_slots.date', past90DaysStr);
 
             const { data: bookings, error } = await query;
 

@@ -7,40 +7,40 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-800 pb-20">
+<body class="bg-gray-100 font-sans antialiased text-gray-900 pb-20">
 
     <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Mobile-First) -->
-    <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-linear-to-b from-indigo-500 to-purple-600">
-        <div class="bg-white p-6 rounded-3xl shadow-xl w-full max-w-sm text-center">
+    <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-linear-to-b from-indigo-600 via-purple-600 to-indigo-800">
+        <div class="bg-white p-7 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
             <div class="text-6xl mb-3">💇‍♀️</div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-1">ร้านสระผมคุณส้ม</h1>
-            <p class="text-xs text-gray-500 mb-6">ระบบจองคิวใช้บริการออนไลน์ <span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded font-mono text-[10px] font-bold">v0.01</span></p>
+            <h1 class="text-2xl font-black text-gray-900 mb-1 tracking-tight">ร้านสระผมคุณส้ม</h1>
+            <p class="text-xs text-gray-500 mb-6 font-medium">ระบบจองคิวใช้บริการออนไลน์ <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md font-mono text-[11px] font-bold border border-indigo-100">v0.01</span></p>
 
             <!-- ตัวเลือกเข้าใช้งาน 2 วิธี -->
-            <div class="space-y-3">
-                <button id="btn-login-google" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-2xl shadow-xs transition text-sm cursor-pointer">
+            <div class="space-y-3.5">
+                <button id="btn-login-google" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:border-gray-400 text-gray-800 font-bold py-3.5 px-4 rounded-2xl shadow-xs transition text-sm cursor-pointer">
                     <svg class="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.29 1.157 15.485 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.789-.085-1.39-.188-1.945H12.24z"/>
                     </svg>
-                    เข้าใช้งานด้วย Google
+                    ลงชื่อเข้าใช้ด้วย Google
                 </button>
 
                 <div class="flex items-center gap-2 my-2">
                     <div class="h-px bg-gray-200 flex-1"></div>
-                    <span class="text-[11px] text-gray-400 font-medium">หรือเข้าผ่านเบอร์โทร</span>
+                    <span class="text-[11px] text-gray-400 font-bold">หรือเข้าผ่านเบอร์โทรศัพท์</span>
                     <div class="h-px bg-gray-200 flex-1"></div>
                 </div>
 
                 <form id="phone-login-form" class="space-y-3 text-left">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่อของคุณลูกค้า</label>
-                        <input type="text" id="input-cust-name" required placeholder="เช่น คุณส้ม / น้องปิง" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm focus:outline-indigo-500 bg-gray-50">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">ชื่อของคุณลูกค้า</label>
+                        <input type="text" id="input-cust-name" required placeholder="เช่น คุณส้ม / น้องปิง" class="w-full p-3 border border-gray-300 rounded-xl text-sm font-semibold focus:outline-indigo-500 bg-gray-50 focus:bg-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">เบอร์โทรศัพท์มือถือ</label>
-                        <input type="tel" id="input-cust-phone" required placeholder="0812345678" maxlength="10" pattern="[0-9]{9,10}" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm focus:outline-indigo-500 bg-gray-50 font-mono">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">เบอร์โทรศัพท์มือถือ</label>
+                        <input type="tel" id="input-cust-phone" required placeholder="0812345678" maxlength="10" pattern="[0-9]{9,10}" class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:outline-indigo-500 bg-gray-50 focus:bg-white font-mono font-bold tracking-wider">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-2xl text-sm transition cursor-pointer shadow-md">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl text-sm transition cursor-pointer shadow-md">
                         เข้าสู่ระบบจองคิว 📱
                     </button>
                 </form>
@@ -55,24 +55,24 @@
             <div class="flex items-center gap-2.5">
                 <span class="text-2xl">💇‍♀️</span>
                 <div>
-                    <h2 class="font-bold text-sm">ร้านสระผมคุณส้ม</h2>
-                    <p id="display-user-info" class="text-[11px] text-indigo-300 truncate max-w-[180px]">กำลังโหลด...</p>
+                    <h2 class="font-black text-sm tracking-tight">ร้านสระผมคุณส้ม</h2>
+                    <p id="display-user-info" class="text-[11px] text-indigo-300 font-medium truncate max-w-[180px]">กำลังโหลด...</p>
                 </div>
             </div>
-            <button id="btn-customer-logout" class="text-xs text-red-400 bg-red-950/40 hover:bg-red-900/60 px-2.5 py-1.5 rounded-lg border border-red-800/40 transition cursor-pointer">
+            <button id="btn-customer-logout" class="text-xs text-red-400 bg-red-950/50 hover:bg-red-900/60 px-2.5 py-1.5 rounded-xl border border-red-800/50 font-bold transition cursor-pointer">
                 ออกจากระบบ
             </button>
         </header>
 
         <!-- โควตาสิทธิ์จองคงเหลือ Alert Card -->
         <div class="p-4">
-            <div class="bg-indigo-600 text-white p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <div class="bg-linear-to-r from-indigo-600 to-purple-600 text-white p-4.5 rounded-3xl shadow-md flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-indigo-200">สิทธิ์คิวจองล่วงหน้าที่ใช้ไป</p>
-                    <p class="text-lg font-bold"><span id="active-booking-count" class="text-2xl">0</span> / 3 สล็อต</p>
+                    <p class="text-xs text-indigo-100 font-medium">คิวจองล่วงหน้าที่ใช้ไป</p>
+                    <p class="text-lg font-black"><span id="active-booking-count" class="text-3xl font-extrabold">0</span> / 3 สล็อต</p>
                 </div>
                 <div class="text-right">
-                    <span id="booking-status-badge" class="px-2.5 py-1 bg-emerald-400 text-emerald-950 text-[11px] font-bold rounded-full">
+                    <span id="booking-status-badge" class="px-3 py-1 bg-emerald-400 text-emerald-950 text-[11px] font-extrabold rounded-full shadow-xs">
                         พร้อมเปิดรับจอง
                     </span>
                 </div>
@@ -81,11 +81,11 @@
 
         <!-- แท็บสลับหน้า: จองคิวใหม่ / คิวของฉัน & ประวัติ -->
         <div class="px-4 mb-4">
-            <div class="grid grid-cols-2 p-1 bg-gray-200 rounded-xl text-xs font-bold text-center">
-                <button id="tab-btn-book" class="py-2.5 rounded-lg bg-white text-indigo-600 shadow-2xs transition cursor-pointer">
+            <div class="grid grid-cols-2 p-1 bg-gray-200/80 rounded-2xl text-xs font-bold text-center">
+                <button id="tab-btn-book" class="py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black">
                     📅 จองเวลาใหม่
                 </button>
-                <button id="tab-btn-history" class="py-2.5 rounded-lg text-gray-600 hover:text-gray-900 transition cursor-pointer">
+                <button id="tab-btn-history" class="py-2.5 rounded-xl text-gray-600 hover:text-gray-900 transition cursor-pointer font-black">
                     📜 คิวของฉัน & ประวัติ
                 </button>
             </div>
@@ -94,23 +94,23 @@
         <!-- หน้าที่ 1: ตารางเลือกรอบจอง -->
         <div id="view-booking-section" class="px-4 space-y-4">
             <!-- ตัวเลื่อนเลือกวัน -->
-            <div class="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex items-center justify-between">
-                <button id="btn-cust-prev-day" class="p-2 border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-bold">◀</button>
+            <div class="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
+                <button id="btn-cust-prev-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">◀</button>
                 <div class="text-center">
-                    <p class="text-[10px] text-gray-400 font-semibold uppercase">วันที่ต้องการรับบริการ</p>
-                    <input type="date" id="cust-select-date" class="bg-transparent font-bold text-sm text-indigo-600 border-none focus:outline-none text-center">
-                    <p id="cust-thai-date-label" class="text-[11px] text-gray-500 font-medium"></p>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">วันที่ต้องการรับบริการ</p>
+                    <input type="date" id="cust-select-date" class="bg-transparent font-black text-base text-indigo-600 border-none focus:outline-hidden text-center cursor-pointer">
+                    <p id="cust-thai-date-label" class="text-[11px] text-gray-600 font-bold -mt-0.5"></p>
                 </div>
-                <button id="btn-cust-next-day" class="p-2 border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-bold">▶</button>
+                <button id="btn-cust-next-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">▶</button>
             </div>
 
             <!-- รายการรอบสล็อตที่ว่าง -->
             <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">ช่วงเวลาที่เปิดรับจอง</h3>
-                    <span id="available-slots-count" class="text-xs text-indigo-600 font-semibold">0 สล็อต</span>
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider">ช่วงเวลาที่เปิดรับจอง</h3>
+                    <span id="available-slots-count" class="text-xs text-indigo-600 font-extrabold">0 สล็อต</span>
                 </div>
-                <div id="cust-slots-container" class="space-y-2.5">
+                <div id="cust-slots-container" class="space-y-3">
                     <!-- รอบเวลาจะแสดงตรงนี้ -->
                 </div>
             </div>
@@ -120,15 +120,15 @@
         <div id="view-history-section" class="px-4 space-y-4 hidden">
             <!-- คิวจองล่วงหน้าที่กำลังจะมาถึง -->
             <div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">📌 คิวล่วงหน้าที่รอรับบริการ (ยกเลิกเพื่อจองใหม่ได้)</h3>
-                <div id="active-bookings-list" class="space-y-2.5">
+                <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ (ยกเลิกเพื่อจองใหม่ได้)</h3>
+                <div id="active-bookings-list" class="space-y-3">
                     <!-- รายการคิวจะแสดงตรงนี้ -->
                 </div>
             </div>
 
             <!-- ประวัติย้อนหลัง 30 วัน -->
             <div class="pt-4 border-t border-gray-200">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">📜 ประวัติการใช้งานย้อนหลัง 30 วัน (ดูได้อย่างเดียว)</h3>
+                <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📜 ประวัติการใช้งานย้อนหลัง (ผ่านแล้ว/ยกเลิก)</h3>
                 <div id="past-bookings-list" class="space-y-2.5">
                     <!-- ประวัติย้อนหลังจะแสดงตรงนี้ -->
                 </div>
@@ -138,19 +138,19 @@
 
     <!-- Modal ฟอร์มยืนยันรายละเอียดก่อนกดจอง -->
     <div id="booking-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
-        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 animate-slide-up">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-gray-100 pb-3">
                 <div>
-                    <h3 class="text-base font-bold text-gray-900">ยืนยันการจองคิวสระผม</h3>
-                    <p id="modal-slot-time-text" class="text-xs text-indigo-600 font-bold font-mono"></p>
+                    <h3 class="text-base font-extrabold text-gray-900">ยืนยันการจองคิวสระผม</h3>
+                    <p id="modal-slot-time-text" class="text-xs text-indigo-600 font-bold font-mono mt-0.5"></p>
                 </div>
-                <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+                <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">✕</button>
             </div>
 
-            <form id="modal-confirm-form" class="space-y-3">
+            <form id="modal-confirm-form" class="space-y-3.5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกบริการที่ต้องการทำ</label>
-                    <select id="modal-service-select" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-gray-50 font-medium">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">เลือกบริการที่ต้องการทำ</label>
+                    <select id="modal-service-select" class="w-full p-3 border border-gray-300 rounded-xl text-sm bg-gray-50 font-bold focus:bg-white">
                         <option value="สระ-ไดร์">สระ-ไดร์</option>
                         <option value="ตัดผม">ตัดผม</option>
                         <option value="ทำสีผม">ทำสีผม</option>
@@ -160,16 +160,16 @@
                 </div>
 
                 <div id="custom-service-container" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">ระบุรายละเอียดบริการเพิ่มเติม</label>
-                    <input type="text" id="modal-custom-service" placeholder="เช่น สระไดร์ + อบไอน้ำทรีทเม้นท์" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-gray-50">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">ระบุรายละเอียดบริการเพิ่มเติม</label>
+                    <input type="text" id="modal-custom-service" placeholder="เช่น สระไดร์ + อบไอน้ำทรีทเม้นท์" class="w-full p-3 border border-gray-300 rounded-xl text-sm bg-gray-50 font-medium">
                 </div>
 
-                <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-xs text-indigo-900 space-y-1">
-                    <p>👤 <strong>ผู้จอง:</strong> <span id="modal-cust-name-display"></span></p>
-                    <p>📞 <strong>เบอร์โทร:</strong> <span id="modal-cust-phone-display"></span></p>
+                <div class="bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-100 text-xs text-indigo-950 space-y-1 font-medium">
+                    <p>👤 <strong>ผู้จอง:</strong> <span id="modal-cust-name-display" class="font-bold"></span></p>
+                    <p>📞 <strong>เบอร์โทร:</strong> <span id="modal-cust-phone-display" class="font-bold font-mono"></span></p>
                 </div>
 
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl text-sm shadow-md transition cursor-pointer">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-2xl text-sm shadow-md transition cursor-pointer">
                     ยืนยันการจองคิวนั้นทันที 🚀
                 </button>
             </form>
@@ -182,11 +182,11 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null; // { name, phone, email, authType: 'google' | 'phone' }
+        let currentUser = null; 
         let currentSelectedDate = new Date().toISOString().split('T')[0];
         let daySlotsData = [];
         let dayBookingsData = [];
-        let myActiveBookingsCount = 0;
+        let myActiveBookings = []; // รายการจองทั้งหมดของลูกค้าคนนี้
         let selectedSlotForBooking = null;
 
         const thaiShortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -194,13 +194,11 @@
         window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('cust-select-date').value = currentSelectedDate;
             
-            // ตรวจสอบความจำการเข้าใช้เดิม
             const savedCust = localStorage.getItem('salon_customer_session');
             if (savedCust) {
                 currentUser = JSON.parse(savedCust);
             }
 
-            // Google Auth Listener
             const { data: { session } } = await _supabase.auth.getSession();
             if (session?.user) {
                 const meta = session.user.user_metadata || {};
@@ -227,7 +225,6 @@
                 }
             });
 
-            // Handlers
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
             document.getElementById('phone-login-form').addEventListener('submit', handlePhoneLogin);
             document.getElementById('btn-customer-logout').addEventListener('click', logoutCustomer);
@@ -239,11 +236,9 @@
                 loadDaySlots();
             });
 
-            // Tab Switching
             document.getElementById('tab-btn-book').addEventListener('click', () => switchTab('book'));
             document.getElementById('tab-btn-history').addEventListener('click', () => switchTab('history'));
 
-            // Modal Handlers
             document.getElementById('btn-close-modal').addEventListener('click', closeModal);
             document.getElementById('modal-service-select').addEventListener('change', (e) => {
                 if (e.target.value === 'custom') {
@@ -313,13 +308,14 @@
             const historySection = document.getElementById('view-history-section');
 
             if (tab === 'book') {
-                bookTab.className = "py-2.5 rounded-lg bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-bold";
-                historyTab.className = "py-2.5 rounded-lg text-gray-600 hover:text-gray-900 transition cursor-pointer font-bold";
+                bookTab.className = "py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black";
+                historyTab.className = "py-2.5 rounded-xl text-gray-600 hover:text-gray-900 transition cursor-pointer font-black";
                 bookSection.classList.remove('hidden');
                 historySection.classList.add('hidden');
+                loadCustomerDashboardData();
             } else {
-                historyTab.className = "py-2.5 rounded-lg bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-bold";
-                bookTab.className = "py-2.5 rounded-lg text-gray-600 hover:text-gray-900 transition cursor-pointer font-bold";
+                historyTab.className = "py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black";
+                bookTab.className = "py-2.5 rounded-xl text-gray-600 hover:text-gray-900 transition cursor-pointer font-black";
                 historySection.classList.remove('hidden');
                 bookSection.classList.add('hidden');
                 loadCustomerHistoryData();
@@ -327,18 +323,15 @@
         }
 
         async function loadCustomerDashboardData() {
-            await countActiveBookings();
+            await fetchMyActiveBookings();
             loadDaySlots();
         }
 
-        // นับคิวจองล่วงหน้าที่ยังไม่ถึงเวลาจริง
-        async function countActiveBookings() {
-            const todayStr = new Date().toISOString().split('T')[0];
-
+        // ดึงการจองทั้งหมดของลูกค้าท่านนี้ และคำนวณสิทธิ์ล่วงหน้า (นับเฉพาะรอบที่ยังไม่ผ่านพ้นเวลาจริง)
+        async function fetchMyActiveBookings() {
             let query = _supabase
                 .from('bookings')
-                .select('id, slot_id, status, booking_slots!inner(date, start_time)')
-                .gte('booking_slots.date', todayStr)
+                .select('id, slot_id, status, service_type, booking_slots!inner(id, date, start_time, end_time)')
                 .neq('status', 'cancelled');
 
             if (currentUser.authType === 'google') {
@@ -347,17 +340,23 @@
                 query = query.eq('customer_phone', currentUser.phone);
             }
 
-            const { data, error } = await query;
-            myActiveBookingsCount = (data || []).length;
+            const { data } = await query;
+            const now = new Date();
 
-            document.getElementById('active-booking-count').innerText = myActiveBookingsCount;
+            myActiveBookings = (data || []).filter(b => {
+                const slotEndDateTime = new Date(`${b.booking_slots.date}T${b.booking_slots.end_time}`);
+                return slotEndDateTime > now; // นำเฉพาะรอบที่ยังไม่หมดเวลา
+            });
+
+            const activeCount = myActiveBookings.length;
+            document.getElementById('active-booking-count').innerText = activeCount;
             const badge = document.getElementById('booking-status-badge');
 
-            if (myActiveBookingsCount >= 3) {
-                badge.className = "px-2.5 py-1 bg-red-100 text-red-700 text-[11px] font-bold rounded-full";
+            if (activeCount >= 3) {
+                badge.className = "px-3 py-1 bg-red-100 text-red-700 text-[11px] font-black rounded-full border border-red-200";
                 badge.innerText = "⚠️ ครบสิทธิ์จองล่วงหน้า 3 สล็อตแล้ว";
             } else {
-                badge.className = "px-2.5 py-1 bg-emerald-400 text-emerald-950 text-[11px] font-bold rounded-full";
+                badge.className = "px-3 py-1 bg-emerald-400 text-emerald-950 text-[11px] font-black rounded-full shadow-xs";
                 badge.innerText = "✅ พร้อมเปิดรับจอง";
             }
         }
@@ -365,10 +364,10 @@
         async function loadDaySlots() {
             document.getElementById('cust-thai-date-label').innerText = formatThaiDate(currentSelectedDate);
             const container = document.getElementById('cust-slots-container');
-            container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">🔄 กำลังโหลดสล็อตเวลา...</p>';
+            container.innerHTML = '<p class="text-xs text-gray-400 text-center py-8 font-medium">🔄 กำลังโหลดช่วงเวลาที่เปิดรับจอง...</p>';
 
             // ดึงสล็อตของวันที่เลือกเฉพาะที่เปิดอยู่
-            const { data: slots, error } = await _supabase
+            const { data: slots } = await _supabase
                 .from('booking_slots')
                 .select('*')
                 .eq('date', currentSelectedDate)
@@ -380,20 +379,19 @@
             if (daySlotsData.length === 0) {
                 document.getElementById('available-slots-count').innerText = "0 สล็อต";
                 container.innerHTML = `
-                    <div class="text-center py-10 bg-white rounded-2xl border border-gray-200">
-                        <p class="text-3xl mb-1">😴</p>
-                        <p class="text-xs font-semibold text-gray-600">ไม่มีสล็อตเปิดรับจองในวันนี้</p>
-                        <p class="text-[11px] text-gray-400 mt-0.5">ลองกดปุ่มเลื่อนเปลี่ยนวันที่ต้องการดูนะครับ</p>
+                    <div class="text-center py-12 bg-white rounded-3xl border border-gray-200 shadow-2xs">
+                        <p class="text-4xl mb-2">😴</p>
+                        <p class="text-xs font-bold text-gray-700">ไม่มีช่วงเวลาเปิดรับจองในวันนี้</p>
+                        <p class="text-[11px] text-gray-400 mt-1 font-medium">ลองกดปุ่มเลื่อนเปลี่ยนวันที่ต้องการดูนะครับ</p>
                     </div>
                 `;
                 return;
             }
 
-            // ดึงการจองเพื่อคำนวณคิวว่าง
             const slotIds = daySlotsData.map(s => s.id);
             const { data: bookings } = await _supabase
                 .from('bookings')
-                .select('slot_id, status')
+                .select('slot_id, status, customer_phone, customer_email')
                 .in('slot_id', slotIds)
                 .neq('status', 'cancelled');
 
@@ -401,27 +399,72 @@
             container.innerHTML = '';
 
             let availableSlotsCount = 0;
+            const now = new Date();
 
             daySlotsData.forEach(slot => {
-                const bookedCount = dayBookingsData.filter(b => b.slot_id === slot.id).length;
+                const slotEndDateTime = new Date(`${slot.date}T${slot.end_time}`);
+                const isPassed = slotEndDateTime <= now; // เช็คว่ารอบเวลานี้ผ่านไปแล้วหรือยัง
+
+                const slotBookings = dayBookingsData.filter(b => b.slot_id === slot.id);
+                const bookedCount = slotBookings.length;
                 const remaining = slot.max_capacity - bookedCount;
                 const isFull = remaining <= 0;
 
-                if (!isFull) availableSlotsCount++;
+                // เช็คว่าลูกค้าคนนี้เคยจองรอบนี้ไว้แล้วหรือไม่
+                const isMyBooked = slotBookings.some(b => {
+                    if (currentUser.authType === 'google') return b.customer_email === currentUser.email;
+                    return b.customer_phone === currentUser.phone;
+                });
+
+                if (!isFull && !isPassed) availableSlotsCount++;
 
                 const card = document.createElement('div');
-                card.className = `p-3.5 bg-white rounded-2xl border ${isFull ? 'border-gray-200 opacity-60' : 'border-indigo-100 shadow-2xs'} flex items-center justify-between`;
+                card.className = `p-4 bg-white rounded-2xl border transition-all ${
+                    isMyBooked 
+                        ? 'border-emerald-300 bg-emerald-50/40 shadow-xs' 
+                        : (isFull || isPassed ? 'border-gray-200 bg-gray-50/70 opacity-60' : 'border-indigo-100 shadow-2xs')
+                } flex items-center justify-between gap-2`;
+
+                let actionButtonHtml = '';
+                if (isMyBooked) {
+                    actionButtonHtml = `
+                        <span class="px-3 py-2 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-black border border-emerald-200/80">
+                            ✓ จองแล้ว
+                        </span>
+                    `;
+                } else if (isPassed) {
+                    actionButtonHtml = `
+                        <span class="px-3 py-2 bg-gray-200 text-gray-500 rounded-xl text-xs font-bold">
+                            หมดเวลา
+                        </span>
+                    `;
+                } else if (isFull) {
+                    actionButtonHtml = `
+                        <span class="px-3 py-2 bg-red-100 text-red-600 rounded-xl text-xs font-bold">
+                            คิวเต็ม
+                        </span>
+                    `;
+                } else {
+                    actionButtonHtml = `
+                        <button onclick="openBookingModal('${slot.id}')" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer">
+                            กดจองคิว
+                        </button>
+                    `;
+                }
 
                 card.innerHTML = `
                     <div>
-                        <p class="font-mono font-bold text-base text-gray-900">${slot.start_time.substring(0,5)} - ${slot.end_time.substring(0,5)} น.</p>
-                        <p class="text-[11px] ${isFull ? 'text-red-500 font-semibold' : 'text-emerald-600 font-medium'}">
-                            ${isFull ? '⚠️ คิวเต็มแล้ว' : `ว่างอีก ${remaining} คิว (จองแล้ว ${bookedCount}/${slot.max_capacity})`}
+                        <div class="flex items-center gap-2">
+                            <p class="font-mono font-black text-lg text-gray-900">${slot.start_time.substring(0,5)} - ${slot.end_time.substring(0,5)} น.</p>
+                            ${isMyBooked ? '<span class="text-[10px] font-black px-1.5 py-0.5 bg-emerald-600 text-white rounded">คิวของคุณ</span>' : ''}
+                        </div>
+                        <p class="text-xs ${isMyBooked ? 'text-emerald-700 font-bold' : (isFull || isPassed ? 'text-gray-400 font-medium' : 'text-emerald-600 font-bold')} mt-0.5">
+                            ${isMyBooked 
+                                ? '✅ คุณได้ลงทะเบียนจองรอบนี้เรียบร้อยแล้ว' 
+                                : (isPassed ? '⏰ ช่วงเวลานี้ผ่านไปแล้ว' : (isFull ? '⚠️ คิวเต็มแล้ว' : `ว่างอีก ${remaining} คิว (จองแล้ว ${bookedCount}/${slot.max_capacity})`))}
                         </p>
                     </div>
-                    <button onclick="openBookingModal('${slot.id}')" ${isFull ? 'disabled' : ''} class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer">
-                        ${isFull ? 'เต็ม' : 'กดจองคิว'}
-                    </button>
+                    ${actionButtonHtml}
                 `;
                 container.appendChild(card);
             });
@@ -430,7 +473,7 @@
         }
 
         window.openBookingModal = function(slotId) {
-            if (myActiveBookingsCount >= 3) {
+            if (myActiveBookings.length >= 3) {
                 alert("⚠️ คุณลูกค้าจองคิวล่วงหน้าครบ 3 สล็อตแล้วครับ!\nหากต้องการเปลี่ยนรอบ กรุณาไปที่แท็บ 'คิวของฉัน' เพื่อยกเลิกคิวเดิมก่อนครับ");
                 return;
             }
@@ -480,19 +523,17 @@
             }
         }
 
-        // โหลดประวัติการจอง ย้อนหลัง 30 วัน & คิวปัจจุบัน
+        // โหลดข้อมูล "คิวล่วงหน้า" และ "ประวัติย้อนหลัง" (จำแนกตามวันเวลาสิ้นสุดรอบสล็อต)
         async function loadCustomerHistoryData() {
             const activeContainer = document.getElementById('active-bookings-list');
             const pastContainer = document.getElementById('past-bookings-list');
 
-            activeContainer.innerHTML = '<p class="text-xs text-gray-400">🔄 กำลังโหลดข้อมูลคิว...</p>';
-            pastContainer.innerHTML = '<p class="text-xs text-gray-400">🔄 กำลังโหลดประวัติย้อนหลัง...</p>';
-
-            const todayStr = new Date().toISOString().split('T')[0];
+            activeContainer.innerHTML = '<p class="text-xs text-gray-400 py-4 text-center font-medium">🔄 กำลังโหลดข้อมูลคิว...</p>';
+            pastContainer.innerHTML = '<p class="text-xs text-gray-400 py-4 text-center font-medium">🔄 กำลังโหลดประวัติย้อนหลัง...</p>';
 
             let query = _supabase
                 .from('bookings')
-                .select('id, service_type, status, created_at, booking_slots!inner(date, start_time, end_time)')
+                .select('id, service_type, status, created_at, booking_slots!inner(id, date, start_time, end_time)')
                 .order('created_at', { ascending: false });
 
             if (currentUser.authType === 'google') {
@@ -509,24 +550,35 @@
             }
 
             const allBookings = bookings || [];
-            const activeList = allBookings.filter(b => b.booking_slots.date >= todayStr && b.status !== 'cancelled');
-            const pastList = allBookings.filter(b => b.booking_slots.date < todayStr || b.status === 'cancelled');
+            const now = new Date();
 
-            // Render คิวปัจจุบัน
+            // คิวล่วงหน้า: วันเวลารอบยังไม่จบ และยังไม่ยกเลิก
+            const activeList = allBookings.filter(b => {
+                const slotEndDateTime = new Date(`${b.booking_slots.date}T${b.booking_slots.end_time}`);
+                return slotEndDateTime > now && b.status !== 'cancelled';
+            });
+
+            // ประวัติย้อนหลัง: วันเวลารอบจบแล้ว หรือมีสถานะยกเลิก
+            const pastList = allBookings.filter(b => {
+                const slotEndDateTime = new Date(`${b.booking_slots.date}T${b.booking_slots.end_time}`);
+                return slotEndDateTime <= now || b.status === 'cancelled';
+            });
+
+            // Render คิวที่รอรับบริการ
             activeContainer.innerHTML = '';
             if (activeList.length === 0) {
-                activeContainer.innerHTML = '<p class="text-xs text-gray-400 bg-white p-4 rounded-xl text-center">ไม่มีคิวล่วงหน้าที่รอรับบริการ</p>';
+                activeContainer.innerHTML = '<p class="text-xs text-gray-400 bg-white p-5 rounded-2xl text-center font-medium border border-gray-200">ไม่มีคิวล่วงหน้าที่รอรับบริการ</p>';
             } else {
                 activeList.forEach(b => {
                     const card = document.createElement('div');
-                    card.className = "p-3.5 bg-white rounded-2xl border border-indigo-200 shadow-2xs flex items-center justify-between";
+                    card.className = "p-4 bg-white rounded-2xl border border-indigo-200 shadow-2xs flex items-center justify-between gap-2";
                     card.innerHTML = `
                         <div>
-                            <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold rounded text-[10px]">📅 ${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)})</span>
-                            <p class="font-mono font-bold text-sm text-gray-900 mt-1">🕒 ${b.booking_slots.start_time.substring(0,5)} - ${b.booking_slots.end_time.substring(0,5)} น.</p>
-                            <p class="text-xs text-gray-600 font-medium">✂️ บริการ: ${b.service_type}</p>
+                            <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 font-extrabold rounded-md text-[11px] border border-indigo-100">📅 ${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)})</span>
+                            <p class="font-mono font-black text-base text-gray-900 mt-1.5">🕒 ${b.booking_slots.start_time.substring(0,5)} - ${b.booking_slots.end_time.substring(0,5)} น.</p>
+                            <p class="text-xs text-gray-600 font-bold mt-0.5">✂️ บริการ: ${b.service_type}</p>
                         </div>
-                        <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold border border-red-200 transition cursor-pointer">
+                        <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}', '${b.booking_slots.start_time.substring(0,5)}')" class="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-black border border-red-200 transition cursor-pointer shrink-0">
                             ยกเลิกคิว
                         </button>
                     `;
@@ -534,22 +586,22 @@
                 });
             }
 
-            // Render ประวัติย้อนหลัง
+            // Render ประวัติย้อนหลัง (Read-Only)
             pastContainer.innerHTML = '';
             if (pastList.length === 0) {
-                pastContainer.innerHTML = '<p class="text-xs text-gray-400 bg-white p-4 rounded-xl text-center">ไม่มีประวัติการจองย้อนหลัง</p>';
+                pastContainer.innerHTML = '<p class="text-xs text-gray-400 bg-white p-5 rounded-2xl text-center font-medium border border-gray-200">ไม่มีประวัติการจองย้อนหลัง</p>';
             } else {
                 pastList.forEach(b => {
                     const isCancelled = b.status === 'cancelled';
                     const card = document.createElement('div');
-                    card.className = "p-3 bg-white rounded-xl border border-gray-200 opacity-80 flex items-center justify-between text-xs";
+                    card.className = "p-3.5 bg-white rounded-2xl border border-gray-200/80 opacity-75 flex items-center justify-between text-xs";
                     card.innerHTML = `
                         <div>
-                            <p class="font-semibold text-gray-800">${b.booking_slots.date} | ${b.booking_slots.start_time.substring(0,5)} น.</p>
-                            <p class="text-gray-500">บริการ: ${b.service_type}</p>
+                            <p class="font-black text-gray-800 font-mono">${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)}) | ${b.booking_slots.start_time.substring(0,5)} น.</p>
+                            <p class="text-gray-500 font-bold mt-0.5">บริการ: ${b.service_type}</p>
                         </div>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCancelled ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}">
-                            ${isCancelled ? 'ยกเลิกแล้ว' : 'สำเร็จแล้ว'}
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-black ${isCancelled ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-gray-100 text-gray-600 border border-gray-200'}">
+                            ${isCancelled ? 'ยกเลิกแล้ว' : 'ผ่านไปแล้ว'}
                         </span>
                     `;
                     pastContainer.appendChild(card);
@@ -557,8 +609,8 @@
             }
         }
 
-        window.cancelMyBooking = async function(bookingId, bookingDate) {
-            if (confirm(`คุณต้องการยกเลิกการจองในวันที่ ${bookingDate} ใช่ไหมครับ?`)) {
+        window.cancelMyBooking = async function(bookingId, bookingDate, bookingTime) {
+            if (confirm(`คุณต้องการยกเลิกคิวการจองวันที่ ${bookingDate} เวลา ${bookingTime} น. ใช่ไหมครับ?`)) {
                 const { error } = await _supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
                 if (error) {
                     alert("ยกเลิกคิวไม่สำเร็จ: " + error.message);

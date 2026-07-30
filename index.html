@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-    <!-- โหลด Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 🌟 โหลด Supabase JS SDK แบบ UMD ชัวร์ 100% ไม่โดนบล็อก -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body class="bg-gray-50 font-sans antialiased text-gray-800">
 
@@ -19,7 +19,8 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-1">ร้านสระผมคุณส้ม</h2>
             <p class="text-sm text-gray-500 mb-6">ระบบบัญชีรายรับ-รายจ่ายภายในร้าน <span class="ml-1 px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md font-mono text-xs font-semibold">v0.01</span></p>
             
-            <button id="btn-login-google" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-2.5 px-4 rounded-xl shadow-xs hover:shadow-md transition duration-200 cursor-pointer text-sm">
+            <!-- 🌟 ผูก onclick ตรงที่ตัวปุ่มโดยตรง แก้ปัญหากดแล้วนิ่ง -->
+            <button id="btn-login-google" onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-2.5 px-4 rounded-xl shadow-xs hover:shadow-md transition duration-200 cursor-pointer text-sm">
                 <svg class="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.29 1.157 15.485 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.789-.085-1.39-.188-1.945H12.24z"/>
                 </svg>
@@ -219,7 +220,8 @@
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // สร้าง Supabase Client จาก UMD Object
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         window.transactions = []; 
         let selectedYear = new Date().getFullYear();
@@ -239,12 +241,28 @@
         let currentSortKey = 'date'; 
         let currentSortDirection = 'desc'; 
 
+        // 🌟 ฟังก์ชันล็อกอิน Google เรียกใช้ผ่าน onclick Direct
+        async function loginWithGoogle() {
+            try {
+                const redirectUrl = window.location.origin + window.location.pathname;
+                const { error } = await _supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: redirectUrl
+                    }
+                });
+                if (error) alert("Supabase Auth Error: " + error.message);
+            } catch (err) {
+                alert("การเข้าสู่ระบบขัดข้อง: " + err.message);
+            }
+        }
+
         // --- ตรวจสอบล็อกอิน Supabase Auth ---
         window.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await _supabase.auth.getSession();
             handleAuthState(session?.user || null);
 
-            supabase.auth.onAuthStateChange((_event, session) => {
+            _supabase.auth.onAuthStateChange((_event, session) => {
                 handleAuthState(session?.user || null);
             });
         });
@@ -276,32 +294,17 @@
                 hasLoggedCurrentSession = false;
 
                 if (realtimeChannel) {
-                    supabase.removeChannel(realtimeChannel);
+                    _supabase.removeChannel(realtimeChannel);
                     realtimeChannel = null;
                 }
             }
         }
 
-        // 🌟 เพิ่มการจับข้อผิดพลาด OAuth
-        document.getElementById('btn-login-google').addEventListener('click', async () => {
-            try {
-                const { error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin + window.location.pathname
-                    }
-                });
-                if (error) alert("OAuth Error: " + error.message);
-            } catch (error) {
-                alert("การล็อกอินล้มเหลว: " + error.message);
-            }
-        });
-
         document.getElementById('btn-logout').addEventListener('click', async () => {
             if (confirm("คุณปิงต้องการออกจากระบบบัญชีใช่ไหมครับ?")) {
                 try {
                     await writeActivityLog("ออกจากระบบ", `กดปุ่มตัดการเชื่อมต่อและออกจากระบบบัญชีแล้ว`);
-                    await supabase.auth.signOut();
+                    await _supabase.auth.signOut();
                     isFirstLoad = true; 
                 } catch (error) {
                     alert("ออกจากระบบผิดพลาด: " + error.message);
@@ -311,7 +314,7 @@
 
         async function fetchAllData() {
             document.getElementById('page-info').innerText = "🔄 กำลังซิงค์ข้อมูล Cloud...";
-            const { data, error } = await supabase
+            const { data, error } = await _supabase
                 .from('salon_records')
                 .select('*');
 
@@ -349,7 +352,7 @@
             fetchAllData();
 
             if (!realtimeChannel) {
-                realtimeChannel = supabase
+                realtimeChannel = _supabase
                     .channel('public:salon_records')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'salon_records' }, () => {
                         fetchAllData();
@@ -382,7 +385,7 @@
                 const currentEmail = currentUserData?.email || "Unknown Email"; 
                 const datetimeString = getThaiZoneISOString(); 
                 
-                await supabase.from('activity_logs').insert([{
+                await _supabase.from('activity_logs').insert([{
                     user_name: currentUser, 
                     user_email: currentEmail, 
                     action: actionType,
@@ -583,7 +586,7 @@
             if (!item) return;
             if (confirm(`คุณปิงแน่ใจนะครับ ว่าต้องการลบรายการ "${item.description}"?`)) {
                 try {
-                    const { error } = await supabase.from('salon_records').delete().eq('id', id);
+                    const { error } = await _supabase.from('salon_records').delete().eq('id', id);
                     if (error) throw error;
                     await writeActivityLog("ลบรายการ", `ลบรายการ: "${item.description}" ยอด ${Number(item.amount).toFixed(2)} บ.`);
                     if (document.getElementById('edit-id').value === id) { window.resetFormMode(); }
@@ -668,11 +671,11 @@
                     if (existingItem && existingItem.date.substring(0,10) === inputDateValue) {
                         payload.date = existingItem.date; 
                     }
-                    const { error } = await supabase.from('salon_records').update(payload).eq('id', editId);
+                    const { error } = await _supabase.from('salon_records').update(payload).eq('id', editId);
                     if (error) throw error;
                     await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
                 } else {
-                    const { error } = await supabase.from('salon_records').insert([payload]);
+                    const { error } = await _supabase.from('salon_records').insert([payload]);
                     if (error) throw error;
                     await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
                 }

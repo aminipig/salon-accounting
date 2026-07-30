@@ -6,12 +6,10 @@
     <title>จองคิวสระผมคุณส้ม v0.01</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <!-- LINE LIFF SDK v2 -->
-    <script charset="UTF-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-900 pb-20">
 
-    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า -->
+    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Google Account & Facebook Login) -->
     <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-linear-to-b from-indigo-600 via-purple-600 to-indigo-800">
         <div class="bg-white p-7 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
             <div class="text-6xl mb-3">💇‍♀️</div>
@@ -19,12 +17,12 @@
             <p class="text-xs text-gray-500 mb-6 font-medium">ระบบจองคิวใช้บริการออนไลน์ <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md font-mono text-[11px] font-bold border border-indigo-100">v0.01</span></p>
 
             <div class="space-y-3.5">
-                <!-- ปุ่มเข้าผ่าน LINE Direct LIFF -->
-                <button id="btn-login-line" class="w-full flex items-center justify-center gap-3 bg-[#06C755] hover:bg-[#05b34c] text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-sm transition text-sm cursor-pointer">
+                <!-- ปุ่มเข้าผ่าน Facebook -->
+                <button id="btn-login-facebook" class="w-full flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-sm transition text-sm cursor-pointer">
                     <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                        <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.412-.105-.531-.283l-2.222-3.212v2.839c0 .345-.282.629-.627.629-.348 0-.63-.284-.63-.629V8.108c0-.27.173-.51.43-.595.063-.023.132-.033.201-.033.211 0 .411.105.53.282l2.223 3.213V8.108c0-.345.282-.63.628-.63.348 0 .63.285.63.63v4.771zm-5.741 0c0 .345-.282.629-.63.629-.345 0-.627-.284-.627-.629V8.108c0-.345.282-.63.628-.63.347 0 .629.285.629.63v4.771zm-2.466.629H4.917c-.345 0-.63-.284-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
-                    เข้าใช้งานด้วย LINE
+                    เข้าใช้งานด้วย Facebook
                 </button>
 
                 <div class="flex items-center gap-2 my-2">
@@ -194,11 +192,10 @@
         </div>
     </div>
 
-    <!-- Supabase & LIFF Client Engine -->
+    <!-- Supabase Auth Pure Logic -->
     <script>
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
-        const MY_LIFF_ID = "2010902328-ujV1R7Rw";
 
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -214,22 +211,17 @@
         window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('cust-select-date').value = currentSelectedDate;
 
-            // 1. ตรวจสอบ LINE LIFF ล็อกอินก่อน
-            await initLiffDirect();
+            // ตรวจสอบ Auth Session จาก Supabase
+            const { data: { session } } = await _supabase.auth.getSession();
+            handleUserSession(session?.user || null);
 
-            // 2. ถ้าไม่ได้ใช้ LINE ให้เช็ค Google Auth จาก Supabase
-            if (!currentUser) {
-                const { data: { session } } = await _supabase.auth.getSession();
-                handleGoogleSession(session?.user || null);
-
-                _supabase.auth.onAuthStateChange((_event, session) => {
-                    handleGoogleSession(session?.user || null);
-                });
-            }
+            _supabase.auth.onAuthStateChange((_event, session) => {
+                handleUserSession(session?.user || null);
+            });
 
             // Handlers
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
-            document.getElementById('btn-login-line').addEventListener('click', loginWithLine);
+            document.getElementById('btn-login-facebook').addEventListener('click', loginWithFacebook);
             document.getElementById('btn-customer-logout').addEventListener('click', logoutCustomer);
 
             document.getElementById('btn-open-edit-phone').addEventListener('click', openEditPhoneModal);
@@ -259,83 +251,57 @@
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
 
-        // 🟢 ระบบ LINE LIFF Direct Login
-        async function initLiffDirect() {
-            if (!window.liff || !MY_LIFF_ID) return;
-            try {
-                await liff.init({ liffId: MY_LIFF_ID });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    currentUser = {
-                        id: profile.userId,
-                        name: profile.displayName || "ลูกค้า LINE",
-                        phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
-                        email: profile.userId, // ใช้ LINE userId เป็น Account ID
-                        avatar: profile.pictureUrl || null,
-                        provider: 'line'
-                    };
-                    checkUserLoginState();
-                }
-            } catch (err) {
-                console.log("LIFF Direct Init Status:", err.message);
-            }
-        }
-
-        async function loginWithLine() {
-            if (!window.liff || !MY_LIFF_ID) {
-                alert("ระบบ LINE กำลังปรับปรุง กรุณาใช้ Google Login แทนได้เลยครับ");
-                return;
-            }
-            try {
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                } else {
-                    const profile = await liff.getProfile();
-                    currentUser = {
-                        id: profile.userId,
-                        name: profile.displayName || "ลูกค้า LINE",
-                        phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
-                        email: profile.userId,
-                        avatar: profile.pictureUrl || null,
-                        provider: 'line'
-                    };
-                    checkUserLoginState();
-                }
-            } catch (err) {
-                alert("LINE Login Error: " + err.message);
-            }
-        }
-
-        function handleGoogleSession(user) {
-            if (user && !currentUser) {
+        function handleUserSession(user) {
+            if (user) {
                 const meta = user.user_metadata || {};
+                const provider = user.app_metadata?.provider || 'google';
                 currentUser = {
                     id: user.id,
-                    name: meta.full_name || meta.name || "ลูกค้า Google",
+                    name: meta.full_name || meta.name || "ผู้ใช้งาน",
                     phone: localStorage.getItem(`cust_phone_${user.id}`) || null,
-                    email: user.email,
+                    email: user.email || `${user.id}@fb.user`,
                     avatar: meta.avatar_url || meta.picture || null,
-                    provider: 'google'
+                    provider: provider
                 };
+            } else {
+                currentUser = null;
             }
             checkUserLoginState();
         }
 
+        // ล็อกอิน Facebook ผ่าน Supabase
+        async function loginWithFacebook() {
+            try {
+                const redirectUrl = window.location.origin + window.location.pathname;
+                const { error } = await _supabase.auth.signInWithOAuth({
+                    provider: 'facebook',
+                    options: { redirectTo: redirectUrl }
+                });
+                if (error) alert("การเชื่อมต่อ Facebook เกิดข้อผิดพลาด: " + error.message);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+
+        // ล็อกอิน Google ผ่าน Supabase
         async function loginWithGoogle() {
-            const redirectUrl = window.location.origin + window.location.pathname;
-            await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectUrl } });
+            try {
+                const redirectUrl = window.location.origin + window.location.pathname;
+                const { error } = await _supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: redirectUrl }
+                });
+                if (error) alert("การเชื่อมต่อ Google เกิดข้อผิดพลาด: " + error.message);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาด: " + err.message);
+            }
         }
 
         async function logoutCustomer() {
             if (confirm("ต้องการออกจากระบบใช่ไหมครับ?")) {
                 currentUser = null;
-                try {
-                    if (window.liff && liff.isLoggedIn()) {
-                        liff.logout();
-                    }
-                } catch(e) {}
                 await _supabase.auth.signOut();
-                window.location.reload();
+                checkUserLoginState();
             }
         }
 

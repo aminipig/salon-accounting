@@ -136,9 +136,9 @@
 
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกวันที่เป็นแม่แบบ (Default: วันปัจจุบัน / ย้อนหลัง 30 วัน ถึง +90 วัน):</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกวันที่เป็นแม่แบบ (ย้อนหลัง 30 วัน ถึงล่วงหน้า 30 วัน):</label>
                             <select id="source-template-date" class="w-full p-2 border border-gray-300 rounded-xl text-xs bg-white font-medium focus:outline-indigo-500">
-                                <option value="">-- กำลังโหลดวันที่แม่แบบ --</option>
+                                <option value="">-- กำลังโหลดวันที่ย้อนหลัง --</option>
                             </select>
                         </div>
 
@@ -262,8 +262,8 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             initTimeDropdowns();
-            initDatePickerLimits(); // 🌟 ล็อกขอบเขตปฏิทิน (ต่ำสุด 1 ม.ค. 3 ปีย้อนหลัง / สูงสุด +90 วัน)
-            initChartYearFilter();   // 🌟 ปรับ Dropdown ปีเป็นปีปัจจุบันย้อนหลัง 3 ปี
+            initDatePickerLimits(); // ล็อกขอบเขตปฏิทิน (ต่ำสุด 1 ม.ค. 3 ปีย้อนหลัง / สูงสุด +90 วัน)
+            initChartYearFilter();   // Dropdown ปีเป็นปีปัจจุบันย้อนหลัง 3 ปี
             
             document.getElementById('select-date').value = currentSelectedDate;
             document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
@@ -301,17 +301,14 @@
             });
         });
 
-        // 🌟 ข้อที่ 1 & 2: กำหนดขอบเขตปฏิทิน Min/Max
         function initDatePickerLimits() {
             const dateInput = document.getElementById('select-date');
             const now = new Date();
             const currentYear = now.getFullYear();
 
-            // ล็อกต่ำสุด: 1 มกราคม ของ 3 ปีย้อนหลัง (เช่น ปีนี้ 2026 -> 2024-01-01)
             const minYear = currentYear - 2; 
             const minDateStr = `${minYear}-01-01`;
 
-            // ล็อกสูงสุด: วันปัจจุบัน + 90 วัน
             const maxDateObj = new Date();
             maxDateObj.setDate(maxDateObj.getDate() + 90);
             const maxDateStr = maxDateObj.toISOString().split('T')[0];
@@ -326,7 +323,6 @@
             currentObj.setDate(currentObj.getDate() + offsetDays);
             const targetDateStr = currentObj.toISOString().split('T')[0];
 
-            // ตรวจสอบให้อยู่ภายใน min/max
             if (dateInput.min && targetDateStr < dateInput.min) return;
             if (dateInput.max && targetDateStr > dateInput.max) return;
 
@@ -374,7 +370,6 @@
             }
         }
 
-        // 🌟 ข้อที่ 3: Dropdown ปีของกราฟ เอาปีปัจจุบัน และย้อนหลังได้ 3 ปี (ปีปัจจุบัน, -1 ปี, -2 ปี)
         function initChartYearFilter() {
             const now = new Date();
             const monthSelect = document.getElementById('chart-month-select');
@@ -384,7 +379,6 @@
             const currentYear = now.getFullYear();
 
             yearSelect.innerHTML = '';
-            // รวมปีปัจจุบัน และย้อนหลังไปอีก 2 ปี (รวมเป็น 3 ปี)
             for (let i = 0; i < 3; i++) {
                 const y = currentYear - i;
                 const opt = document.createElement('option');
@@ -580,7 +574,9 @@
                 bookingsData = [];
             }
 
-            if (dateStatus.editable && slotsData.length > 0) {
+            // แสดงปุ่มลบบริเวณด้านบน หากมีสล็อตในวันปัจจุบันที่ยังไม่หมดเวลา
+            const activeSlots = slotsData.filter(s => !isSlotTimePassed(s.date, s.end_time));
+            if (dateStatus.editable && activeSlots.length > 0) {
                 document.getElementById('btn-delete-all-slots').classList.remove('hidden');
             } else {
                 document.getElementById('btn-delete-all-slots').classList.add('hidden');
@@ -594,7 +590,7 @@
             }
         }
 
-        // 🌟 ข้อที่ 4: Default แม่แบบเป็น "วันปัจจุบัน" ก่อน แล้วรองลงมาค่อยเป็น "วันก่อนหน้า"
+        // 🌟 ข้อที่ 1: ปรับขอบเขตแม่แบบเป็น ย้อนหลัง 30 วัน ถึง อนาคตล่วงหน้า 30 วัน จากวันปัจจุบัน
         async function loadRecentDatesForTemplate() {
             const templateSelect = document.getElementById('source-template-date');
             templateSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
@@ -605,9 +601,9 @@
             date30DaysAgo.setDate(date30DaysAgo.getDate() - 30);
             const minDateStr = date30DaysAgo.toISOString().split('T')[0];
 
-            const date90DaysAhead = new Date();
-            date90DaysAhead.setDate(date90DaysAhead.getDate() + 90);
-            const maxDateStr = date90DaysAhead.toISOString().split('T')[0];
+            const date30DaysAhead = new Date();
+            date30DaysAhead.setDate(date30DaysAhead.getDate() + 30);
+            const maxDateStr = date30DaysAhead.toISOString().split('T')[0];
 
             const yesterdayObj = new Date();
             yesterdayObj.setDate(yesterdayObj.getDate() - 1);
@@ -621,7 +617,7 @@
                 .order('date', { ascending: false });
 
             if (error || !data || data.length === 0) {
-                templateSelect.innerHTML = '<option value="">ไม่มีสล็อตเวลาในช่วงย้อนหลัง 30 วัน ถึงล่วงหน้า 90 วัน</option>';
+                templateSelect.innerHTML = '<option value="">ไม่มีสล็อตเวลาในช่วงย้อนหลัง 30 วัน ถึงล่วงหน้า 30 วัน</option>';
                 return;
             }
 
@@ -644,7 +640,6 @@
                 opt.innerText = `${dateStr} ${formatThaiDateString(dateStr)}${labelSuffix}`;
                 templateSelect.appendChild(opt);
 
-                // ลอจิกเลือก Default: ให้ความสำคัญกับ "วันปัจจุบัน" ก่อนอันดับแรก
                 if (isToday) {
                     selectedValue = todayStr;
                 } else if (!selectedValue && isYesterday) {
@@ -795,7 +790,6 @@
             }
         });
 
-        // 🌟 ข้อที่ 1: สร้างรอบมาตรฐานขยายเวลาเป็น 09:00 - 22:00 น.
         document.getElementById('btn-quick-generate').addEventListener('click', async () => {
             const dateStatus = checkDateEditableStatus(currentSelectedDate);
             if (!dateStatus.editable) {
@@ -854,6 +848,7 @@
             }
         });
 
+        // 🌟 ข้อที่ 2: ลบเฉพาะรอบที่ยังไม่หมดเวลาในวันปัจจุบัน (ไม่ลบรายการที่ผ่านไปแล้ว)
         async function deleteAllSlotsOfDay() {
             const dateStatus = checkDateEditableStatus(currentSelectedDate);
             if (!dateStatus.editable) {
@@ -861,16 +856,26 @@
                 return;
             }
 
-            if (confirm(`คุณแน่ใจนะครับ ว่าต้องการลบรอบเวลาทั้งหมดของวันที่ ${currentSelectedDate}?`)) {
+            // กรองเอาเฉพาะ ID ของสล็อตที่ยังไม่หมดเวลา
+            const idsToDelete = slotsData
+                .filter(s => !isSlotTimePassed(s.date, s.end_time))
+                .map(s => s.id);
+
+            if (idsToDelete.length === 0) {
+                alert("⚠️ ไม่มีรอบเวลาที่สามารถลบได้ในขณะนี้ (รอบเวลาทั้งหมดได้ผ่านพ้นไปแล้ว)");
+                return;
+            }
+
+            if (confirm(`คุณแน่ใจนะครับ ว่าต้องการลบรอบเวลาที่เหลือ (${idsToDelete.length} รอบ) ของวันที่ ${currentSelectedDate}? (รายการที่หมดเวลาไปแล้วจะไม่ถูกลบ)`)) {
                 const { error } = await _supabase
                     .from('booking_slots')
                     .delete()
-                    .eq('date', currentSelectedDate);
+                    .in('id', idsToDelete);
 
                 if (error) {
                     alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
                 } else {
-                    await writeActivityLog("ลบสล็อตทั้งหมด", `ลบสล็อตเวลาทั้งหมดของวันที่ ${currentSelectedDate}`);
+                    await writeActivityLog("ลบสล็อตทั้งหมด", `ลบสล็อตเวลาที่เหลือ ${idsToDelete.length} รอบ ของวันที่ ${currentSelectedDate}`);
                     loadDayData();
                 }
             }

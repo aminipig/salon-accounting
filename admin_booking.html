@@ -53,22 +53,23 @@
     <!-- 3. เนื้อหาหลัก -->
     <main id="main-app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
         
-        <!-- ตัวเลือกวันที่ทำงาน พร้อมปุ่มเลื่อนวัน -->
+        <!-- ตัวเลือกวันที่ทำงาน: วันที่สั่งการ: [ ◀ ] [ 07/30/2026 📅 ] [ ▶ ] [ 🏠 วันนี้ ] -->
         <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-gray-900">จัดการรอบเวลาและตรวจสอบการจอง 📅</h1>
                 <p class="text-xs text-gray-500 mt-0.5">เลือกวันที่ต้องการตั้งค่า หรือดูว่ามีลูกค้าท่านใดจองเข้ามาบ้าง</p>
             </div>
             <div class="flex items-center gap-2">
+                <label for="select-date" class="font-medium text-sm text-gray-700 shrink-0">วันที่สั่งการ:</label>
                 <button id="btn-prev-day" class="p-2 border border-gray-300 hover:bg-gray-100 rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันก่อนหน้า">
                     ◀
                 </button>
-                <div class="flex items-center gap-2">
-                    <label for="select-date" class="font-medium text-sm text-gray-700 shrink-0">วันที่สั่งการ:</label>
-                    <input type="date" id="select-date" class="p-2 border border-gray-300 rounded-xl bg-gray-50 text-sm font-semibold focus:bg-white focus:outline-indigo-500">
-                </div>
+                <input type="date" id="select-date" class="p-2 border border-gray-300 rounded-xl bg-gray-50 text-sm font-semibold focus:bg-white focus:outline-indigo-500">
                 <button id="btn-next-day" class="p-2 border border-gray-300 hover:bg-gray-100 rounded-xl transition cursor-pointer text-sm font-bold text-gray-600" title="วันถัดไป">
                     ▶
+                </button>
+                <button id="btn-today" class="p-2 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl transition cursor-pointer text-xs shrink-0" title="กลับสู่วันปัจจุบัน">
+                    🏠 วันนี้
                 </button>
             </div>
         </div>
@@ -206,7 +207,7 @@
                     </div>
                 </div>
 
-                <!-- การ์ดกราฟแสดงจำนวนคนจองประจำเดือน (ปรับเป็น English Month & CE Year) -->
+                <!-- การ์ดกราฟแสดงจำนวนคนจองประจำเดือน -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                         <div>
@@ -271,9 +272,14 @@
             document.getElementById('btn-logout').addEventListener('click', logoutUser);
             document.getElementById('btn-delete-all-slots').addEventListener('click', deleteAllSlotsOfDay);
             
-            // ปุ่มเลื่อนวันก่อนหน้า - ถัดไป
+            // ปุ่มถอยหลังวัน - วันถัดไป - ปุ่มกลับสู่วันนี้
             document.getElementById('btn-prev-day').addEventListener('click', () => changeSelectedDateByOffset(-1));
             document.getElementById('btn-next-day').addEventListener('click', () => changeSelectedDateByOffset(1));
+            document.getElementById('btn-today').addEventListener('click', () => {
+                currentSelectedDate = new Date().toISOString().split('T')[0];
+                document.getElementById('select-date').value = currentSelectedDate;
+                loadDayData();
+            });
 
             document.getElementById('select-date').addEventListener('change', (e) => {
                 currentSelectedDate = e.target.value;
@@ -343,13 +349,12 @@
             for (let y = currentYear; y >= currentYear - 3; y--) {
                 const opt = document.createElement('option');
                 opt.value = y;
-                opt.innerText = `${y}`; // ค.ศ.
+                opt.innerText = `${y}`;
                 yearSelect.appendChild(opt);
             }
             yearSelect.value = currentYear;
         }
 
-        // เรนเดอร์ UI ปฏิทินเลือกหลายวัน ย้อนไปล่วงหน้า 30 วัน
         function renderMultiDatePickerGrid() {
             const grid = document.getElementById('multi-date-picker-grid');
             grid.innerHTML = '';
@@ -748,7 +753,6 @@
             }
         }
 
-        // คัดลอกสล็อตแม่แบบ (รองรับทั้งแบบล่วงหน้า X วัน และแบบเลือกวันที่ปลายทางจากปฏิทิน)
         document.getElementById('btn-copy-template').addEventListener('click', async () => {
             if (isPastDate(currentSelectedDate)) {
                 alert("🔒 ไม่สามารถคัดลอกสร้างสล็อตในวันที่ย้อนหลังได้ครับ!");
@@ -791,7 +795,6 @@
                 targetDateStrings = [...selectedCustomDates];
             }
 
-            // ตรวจสอบวันที่มีสล็อตเดิมอยู่แล้ว
             const { data: existingInTargets } = await _supabase
                 .from('booking_slots')
                 .select('date')
@@ -831,6 +834,13 @@
             alert(`🎉 คัดลอกและสร้างสล็อตเวลาสำเร็จเรียบร้อย รวม ${totalCreated} รอบ (สำหรับ ${targetDateStrings.length} วัน)`);
             await writeActivityLog("คัดลอกรอบเวลาแม่แบบ", `คัดลอกแม่แบบจากวันที่ ${templateDate} ไปสร้างยังปลายทาง ${targetDateStrings.length} วัน`);
             
+            // รีเซ็ตตัวเลือกปลายทางกลับค่าเริ่มต้นแบบ Preset
+            document.getElementById('copy-mode-select').value = 'preset';
+            document.getElementById('copy-preset-container').classList.remove('hidden');
+            document.getElementById('copy-custom-container').classList.add('hidden');
+            selectedCustomDates = [];
+            document.getElementById('selected-dates-count').innerText = "0";
+
             loadDayData();
             updateMonthlyChart();
         });
@@ -867,7 +877,6 @@
             }
         }
 
-        // --- ระบบกราฟสรุปจำนวนคนจองรายวันประจำเดือน ---
         async function updateMonthlyChart() {
             const selectedMonth = parseInt(document.getElementById('chart-month-select').value);
             const selectedYear = parseInt(document.getElementById('chart-year-select').value);

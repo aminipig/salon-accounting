@@ -6,33 +6,39 @@
     <title>จองคิวสระผมคุณส้ม v0.01</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-900 pb-20">
+<body class="bg-slate-100 font-sans antialiased text-slate-800 pb-20">
 
-    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Google Account & Facebook Login) -->
-    <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-linear-to-b from-indigo-600 via-purple-600 to-indigo-800">
-        <div class="bg-white p-7 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
-            <div class="text-6xl mb-3">💇‍♀️</div>
-            <h1 class="text-2xl font-black text-gray-900 mb-1 tracking-tight">ร้านสระผมคุณส้ม</h1>
-            <p class="text-xs text-gray-500 mb-6 font-medium">ระบบจองคิวใช้บริการออนไลน์ <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md font-mono text-[11px] font-bold border border-indigo-100">v0.01</span></p>
+    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Warm & Friendly Theme) -->
+    <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-gradient-to-br from-rose-500 via-pink-500 to-purple-600">
+        <div class="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-white/40">
+            <div class="w-20 h-20 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">
+                💇‍♀️
+            </div>
+            <h1 class="text-2xl font-black text-slate-800 mb-1 tracking-tight">ร้านสระผมคุณส้ม</h1>
+            <p class="text-xs text-rose-500 font-medium mb-6">ยินดีต้อนรับสู่ระบบจองคิวออนไลน์ ✨ <span class="ml-1 px-2 py-0.5 bg-rose-50 text-rose-600 rounded-md font-mono text-[11px] font-bold border border-rose-100">v0.01</span></p>
 
             <div class="space-y-3.5">
                 <!-- ปุ่มเข้าผ่าน Facebook -->
-                <button id="btn-login-facebook" class="w-full flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-sm transition text-sm cursor-pointer">
-                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <button id="btn-login-facebook" class="w-full flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white font-bold py-3.5 px-4 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer active:scale-95">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
                     เข้าใช้งานด้วย Facebook
                 </button>
 
                 <div class="flex items-center gap-2 my-2">
-                    <div class="h-px bg-gray-200 flex-1"></div>
-                    <span class="text-[11px] text-gray-400 font-bold">หรือ</span>
-                    <div class="h-px bg-gray-200 flex-1"></div>
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                    <span class="text-[11px] text-slate-400 font-medium">หรือ</span>
+                    <div class="h-px bg-slate-200 flex-1"></div>
                 </div>
 
                 <!-- ปุ่มเข้าผ่าน Google -->
-                <button id="btn-login-google" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:border-gray-400 text-gray-800 font-extrabold py-3.5 px-4 rounded-2xl shadow-xs transition text-sm cursor-pointer">
+                <button id="btn-login-google" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3.5 px-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 text-sm cursor-pointer active:scale-95">
                     <svg class="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.29 1.157 15.485 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.789-.085-1.39-.188-1.945H12.24z"/>
                     </svg>
@@ -40,70 +46,76 @@
                 </button>
             </div>
             
-            <p class="text-[10px] text-gray-400 mt-6 font-medium">เข้าใช้งานปลอดภัยโดยไม่ต้องจำรหัสผ่าน</p>
+            <p class="text-[11px] text-slate-400 mt-6 font-medium">🌸 จองง่าย ปลอดภัย ไม่ต้องจำรหัสผ่าน</p>
         </div>
     </div>
 
     <!-- 2. ส่วนแอปพลิเคชันหลักบนมือถือ -->
-    <div id="customer-main-app" class="max-w-md mx-auto min-h-screen bg-gray-50 hidden">
-        <header class="bg-gray-900 text-white p-4 sticky top-0 z-40 flex items-center justify-between shadow-md">
+    <div id="customer-main-app" class="max-w-md mx-auto min-h-screen bg-slate-50 hidden shadow-xl border-x border-slate-200/60">
+        <!-- Top Header Bar -->
+        <header class="bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 text-white p-4 sticky top-0 z-40 flex items-center justify-between shadow-md">
             <div class="flex items-center gap-2.5">
-                <img id="user-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full border-2 border-indigo-400 bg-gray-700 hidden shrink-0 object-cover">
+                <img id="user-avatar" src="" alt="Avatar" class="w-9 h-9 rounded-full border-2 border-white/80 bg-rose-200 hidden shrink-0 object-cover shadow-sm">
                 <div>
-                    <h2 class="font-black text-sm tracking-tight">ร้านสระผมคุณส้ม</h2>
+                    <h2 class="font-black text-sm tracking-wide">ร้านสระผมคุณส้ม 🌸</h2>
                     <div class="flex items-center gap-1.5">
-                        <p id="display-user-info" class="text-[11px] text-indigo-300 font-medium truncate max-w-[130px]">กำลังโหลด...</p>
-                        <button id="btn-open-edit-phone" class="text-[10px] bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 px-1.5 py-0.5 rounded border border-indigo-700/60 font-bold transition cursor-pointer" title="แก้ไขเบอร์โทรศัพท์">
-                            ✏️ แก้ไขเบอร์
+                        <p id="display-user-info" class="text-[11px] text-rose-100 font-medium truncate max-w-[130px]">กำลังโหลด...</p>
+                        <button id="btn-open-edit-phone" class="text-[10px] bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded-full font-semibold transition cursor-pointer backdrop-blur-xs">
+                            ✏️ แก้เบอร์
                         </button>
                     </div>
                 </div>
             </div>
-            <button id="btn-customer-logout" class="text-xs text-red-400 bg-red-950/50 hover:bg-red-900/60 px-2.5 py-1.5 rounded-xl border border-red-800/50 font-bold transition cursor-pointer">
-                ออกจากระบบ
+            <button id="btn-customer-logout" class="text-xs text-rose-100 bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-full font-medium transition cursor-pointer border border-white/20">
+                ออกระบบ
             </button>
         </header>
 
+        <!-- โควตาสิทธิ์จองคงเหลือ Alert Card -->
         <div class="p-4">
-            <div class="bg-linear-to-r from-indigo-600 to-purple-600 text-white p-4.5 rounded-3xl shadow-md flex items-center justify-between">
+            <div class="bg-white p-4.5 rounded-3xl shadow-sm border border-rose-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-indigo-100 font-medium">คิวจองล่วงหน้าที่ใช้ไป</p>
-                    <p class="text-lg font-black"><span id="active-booking-count" class="text-3xl font-extrabold">0</span> / 3 สล็อต</p>
+                    <p class="text-xs text-slate-400 font-medium">สิทธิ์คิวจองล่วงหน้าของคุณ</p>
+                    <p class="text-lg font-black text-slate-800"><span id="active-booking-count" class="text-3xl font-black text-rose-500">0</span> <span class="text-xs text-slate-400 font-normal">/ 3 คิว</span></p>
                 </div>
                 <div class="text-right">
-                    <span id="booking-status-badge" class="px-3 py-1 bg-emerald-400 text-emerald-950 text-[11px] font-extrabold rounded-full shadow-xs">
-                        พร้อมเปิดรับจอง
+                    <span id="booking-status-badge" class="px-3.5 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 text-[11px] font-bold rounded-full shadow-2xs">
+                        ✅ พร้อมจองคิว
                     </span>
                 </div>
             </div>
         </div>
 
+        <!-- แท็บสลับหน้า: จองคิวใหม่ / คิวของฉัน & ประวัติ -->
         <div class="px-4 mb-4">
-            <div class="grid grid-cols-2 p-1 bg-gray-200/80 rounded-2xl text-xs font-bold text-center">
-                <button id="tab-btn-book" class="py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black">
-                    📅 จองเวลาใหม่
+            <div class="grid grid-cols-2 p-1.5 bg-slate-200/70 rounded-2xl text-xs font-bold text-center">
+                <button id="tab-btn-book" class="py-2.5 rounded-xl bg-white text-rose-600 shadow-sm transition cursor-pointer font-extrabold">
+                    🌸 จองเวลาใหม่
                 </button>
-                <button id="tab-btn-history" class="py-2.5 rounded-xl text-gray-600 hover:text-gray-900 transition cursor-pointer font-black">
+                <button id="tab-btn-history" class="py-2.5 rounded-xl text-slate-600 hover:text-slate-900 transition cursor-pointer font-bold">
                     📜 คิวของฉัน & ประวัติ
                 </button>
             </div>
         </div>
 
+        <!-- หน้าที่ 1: ตารางเลือกรอบจอง -->
         <div id="view-booking-section" class="px-4 space-y-4">
-            <div class="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
-                <button id="btn-cust-prev-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">◀</button>
+            <!-- ตัวเลื่อนเลือกวัน -->
+            <div class="bg-white p-4 rounded-3xl border border-rose-100 shadow-2xs flex items-center justify-between">
+                <button id="btn-cust-prev-day" class="w-9 h-9 border border-rose-100 rounded-2xl bg-rose-50/50 hover:bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-black active:scale-95 transition">◀</button>
                 <div class="text-center">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">วันที่ต้องการรับบริการ</p>
-                    <input type="date" id="cust-select-date" class="bg-transparent font-black text-base text-indigo-600 border-none focus:outline-hidden text-center cursor-pointer">
-                    <p id="cust-thai-date-label" class="text-[11px] text-gray-600 font-bold -mt-0.5"></p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">เลือกวันที่ใช้บริการ</p>
+                    <input type="date" id="cust-select-date" class="bg-transparent font-black text-base text-rose-600 border-none focus:outline-hidden text-center cursor-pointer">
+                    <p id="cust-thai-date-label" class="text-[11px] text-slate-500 font-bold -mt-0.5"></p>
                 </div>
-                <button id="btn-cust-next-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">▶</button>
+                <button id="btn-cust-next-day" class="w-9 h-9 border border-rose-100 rounded-2xl bg-rose-50/50 hover:bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-black active:scale-95 transition">▶</button>
             </div>
 
+            <!-- รายการรอบสล็อตที่ว่าง -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between px-1">
-                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider">ช่วงเวลาที่เปิดรับจอง</h3>
-                    <span id="available-slots-count" class="text-xs text-indigo-600 font-extrabold">0 สล็อต</span>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">รอบเวลาที่เปิดรับจอง</h3>
+                    <span id="available-slots-count" class="text-xs text-rose-500 font-bold">0 สล็อต</span>
                 </div>
                 <div id="cust-slots-container" class="space-y-3">
                     <!-- รอบเวลาจะแสดงตรงนี้ -->
@@ -111,16 +123,17 @@
             </div>
         </div>
 
+        <!-- หน้าที่ 2: คิวที่จองไว้ & ประวัติ 30 วัน -->
         <div id="view-history-section" class="px-4 space-y-4 hidden">
             <div>
-                <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ (ยกเลิกเพื่อจองใหม่ได้)</h3>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ</h3>
                 <div id="active-bookings-list" class="space-y-3">
                     <!-- รายการคิวจะแสดงตรงนี้ -->
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-gray-200">
-                <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📜 ประวัติการใช้งานย้อนหลัง (ผ่านแล้ว/ยกเลิก)</h3>
+            <div class="pt-4 border-t border-slate-200">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1">📜 ประวัติย้อนหลัง</h3>
                 <div id="past-bookings-list" class="space-y-2.5">
                     <!-- ประวัติย้อนหลังจะแสดงตรงนี้ -->
                 </div>
@@ -129,23 +142,23 @@
     </div>
 
     <!-- Modal 1: บันทึก / แก้ไขเบอร์โทรศัพท์ -->
-    <div id="phone-setup-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center">
-            <div class="text-5xl">📱</div>
-            <h3 class="text-lg font-black text-gray-900" id="phone-modal-title">บันทึกเบอร์โทรศัพท์สำหรับติดต่อ</h3>
-            <p class="text-xs text-gray-500">กรุณาระบุเบอร์โทรศัพท์มือถือ เพื่อให้ทางร้านสามารถโทรแจ้งยืนยันคิวจองได้ครับ</p>
+    <div id="phone-setup-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center border border-rose-100">
+            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto">📱</div>
+            <h3 class="text-lg font-black text-slate-800" id="phone-modal-title">เบอร์โทรศัพท์สำหรับติดต่อ</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">กรุณาระบุเบอร์โทรศัพท์มือถือ เพื่อให้ทางร้านสามารถโทรแจ้งยืนยันคิวได้ครับ</p>
 
-            <form id="phone-setup-form" class="space-y-3 text-left">
+            <form id="phone-setup-form" class="space-y-3.5 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">เบอร์โทรศัพท์มือถือ</label>
-                    <input type="tel" id="setup-phone-input" required placeholder="0812345678" maxlength="10" pattern="[0-9]{9,10}" class="w-full p-3 border border-gray-300 rounded-xl text-base font-mono font-bold text-center tracking-widest focus:outline-indigo-500 bg-gray-50">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">เบอร์โทรศัพท์มือถือ</label>
+                    <input type="tel" id="setup-phone-input" required placeholder="0812345678" maxlength="10" pattern="[0-9]{9,10}" class="w-full p-3.5 border border-slate-200 rounded-2xl text-lg font-mono font-bold text-center tracking-widest focus:outline-rose-500 bg-slate-50">
                 </div>
                 <div class="flex gap-2">
-                    <button type="button" id="btn-cancel-phone-edit" class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer hidden">
+                    <button type="button" id="btn-cancel-phone-edit" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer hidden">
                         ยกเลิก
                     </button>
-                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl text-sm transition cursor-pointer shadow-md">
-                        บันทึกเบอร์โทร 🚀
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold py-3.5 rounded-2xl text-sm transition cursor-pointer shadow-md">
+                        บันทึกเบอร์โทร 💖
                     </button>
                 </div>
             </form>
@@ -153,20 +166,20 @@
     </div>
 
     <!-- Modal 2: ฟอร์มยืนยันรายละเอียดก่อนกดจอง -->
-    <div id="booking-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
-        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+    <div id="booking-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl border border-rose-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <div>
-                    <h3 class="text-base font-extrabold text-gray-900">ยืนยันการจองคิวสระผม</h3>
-                    <p id="modal-slot-time-text" class="text-xs text-indigo-600 font-bold font-mono mt-0.5"></p>
+                    <h3 class="text-base font-extrabold text-slate-800">ยืนยันการจองคิวสระผม ✨</h3>
+                    <p id="modal-slot-time-text" class="text-xs text-rose-500 font-bold font-mono mt-0.5"></p>
                 </div>
-                <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">✕</button>
+                <button id="btn-close-modal" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 text-sm font-bold flex items-center justify-center cursor-pointer">✕</button>
             </div>
 
             <form id="modal-confirm-form" class="space-y-3.5">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">เลือกบริการที่ต้องการทำ</label>
-                    <select id="modal-service-select" class="w-full p-3 border border-gray-300 rounded-xl text-sm bg-gray-50 font-bold focus:bg-white">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">เลือกบริการที่ต้องการทำ</label>
+                    <select id="modal-service-select" class="w-full p-3.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 font-bold focus:bg-white focus:outline-rose-500">
                         <option value="สระ-ไดร์">สระ-ไดร์</option>
                         <option value="ตัดผม">ตัดผม</option>
                         <option value="ทำสีผม">ทำสีผม</option>
@@ -176,17 +189,17 @@
                 </div>
 
                 <div id="custom-service-container" class="hidden">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">ระบุรายละเอียดบริการเพิ่มเติม</label>
-                    <input type="text" id="modal-custom-service" placeholder="เช่น สระไดร์ + อบไอน้ำทรีทเม้นท์" class="w-full p-3 border border-gray-300 rounded-xl text-sm bg-gray-50 font-medium">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">ระบุรายละเอียดบริการเพิ่มเติม</label>
+                    <input type="text" id="modal-custom-service" placeholder="เช่น สระไดร์ + อบไอน้ำทรีทเม้นท์" class="w-full p-3.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 font-medium focus:outline-rose-500">
                 </div>
 
-                <div class="bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-100 text-xs text-indigo-950 space-y-1 font-medium">
-                    <p>👤 <strong>ผู้จอง:</strong> <span id="modal-cust-name-display" class="font-bold"></span></p>
-                    <p>📞 <strong>เบอร์โทรติดต่อ:</strong> <span id="modal-cust-phone-display" class="font-bold font-mono text-indigo-700"></span></p>
+                <div class="bg-rose-50/60 p-4 rounded-2xl border border-rose-100 text-xs text-slate-700 space-y-1 font-medium">
+                    <p>👤 <strong>ชื่อผู้จอง:</strong> <span id="modal-cust-name-display" class="font-bold text-rose-600"></span></p>
+                    <p>📞 <strong>เบอร์ติดต่อ:</strong> <span id="modal-cust-phone-display" class="font-bold font-mono text-rose-600"></span></p>
                 </div>
 
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-2xl text-sm shadow-md transition cursor-pointer">
-                    ยืนยันการจองคิวนั้นทันที 🚀
+                <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-extrabold py-3.5 rounded-2xl text-sm shadow-md transition cursor-pointer active:scale-98">
+                    ยืนยันการจองคิว 🚀
                 </button>
             </form>
         </div>
@@ -269,13 +282,15 @@
             checkUserLoginState();
         }
 
-        // ล็อกอิน Facebook ผ่าน Supabase
         async function loginWithFacebook() {
             try {
                 const redirectUrl = window.location.origin + window.location.pathname;
                 const { error } = await _supabase.auth.signInWithOAuth({
                     provider: 'facebook',
-                    options: { redirectTo: redirectUrl }
+                    options: {
+                        redirectTo: redirectUrl,
+                        scopes: 'public_profile'
+                    }
                 });
                 if (error) alert("การเชื่อมต่อ Facebook เกิดข้อผิดพลาด: " + error.message);
             } catch (err) {
@@ -283,7 +298,6 @@
             }
         }
 
-        // ล็อกอิน Google ผ่าน Supabase
         async function loginWithGoogle() {
             try {
                 const redirectUrl = window.location.origin + window.location.pathname;
@@ -310,7 +324,7 @@
                 document.getElementById('customer-login-screen').classList.add('hidden');
                 document.getElementById('customer-main-app').classList.remove('hidden');
                 
-                document.getElementById('display-user-info').innerText = `👤 ${currentUser.name} (${currentUser.provider.toUpperCase()})`;
+                document.getElementById('display-user-info').innerText = `👤 ${currentUser.name}`;
                 if (currentUser.avatar) {
                     const avatarImg = document.getElementById('user-avatar');
                     avatarImg.src = currentUser.avatar;
@@ -376,14 +390,14 @@
             const historySection = document.getElementById('view-history-section');
 
             if (tab === 'book') {
-                bookTab.className = "py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black";
-                historyTab.className = "py-2.5 rounded-xl text-gray-600 hover:text-gray-900 transition cursor-pointer font-black";
+                bookTab.className = "py-2.5 rounded-xl bg-white text-rose-600 shadow-sm transition cursor-pointer font-extrabold";
+                historyTab.className = "py-2.5 rounded-xl text-slate-600 hover:text-slate-900 transition cursor-pointer font-bold";
                 bookSection.classList.remove('hidden');
                 historySection.classList.add('hidden');
                 loadCustomerDashboardData();
             } else {
-                historyTab.className = "py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black";
-                bookTab.className = "py-2.5 rounded-xl text-gray-600 hover:text-gray-900 transition cursor-pointer font-black";
+                historyTab.className = "py-2.5 rounded-xl bg-white text-rose-600 shadow-sm transition cursor-pointer font-extrabold";
+                bookTab.className = "py-2.5 rounded-xl text-slate-600 hover:text-slate-900 transition cursor-pointer font-bold";
                 historySection.classList.remove('hidden');
                 bookSection.classList.add('hidden');
                 loadCustomerHistoryData();
@@ -415,18 +429,18 @@
             const badge = document.getElementById('booking-status-badge');
 
             if (activeCount >= 3) {
-                badge.className = "px-3 py-1 bg-red-100 text-red-700 text-[11px] font-black rounded-full border border-red-200";
-                badge.innerText = "⚠️ ครบสิทธิ์จองล่วงหน้า 3 สล็อตแล้ว";
+                badge.className = "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-extrabold rounded-full shadow-2xs";
+                badge.innerText = "⚠️ ครบสิทธิ์ 3 คิวแล้ว";
             } else {
-                badge.className = "px-3 py-1 bg-emerald-400 text-emerald-950 text-[11px] font-black rounded-full shadow-xs";
-                badge.innerText = "✅ พร้อมเปิดรับจอง";
+                badge.className = "px-3.5 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 text-[11px] font-extrabold rounded-full shadow-2xs";
+                badge.innerText = "✅ พร้อมจองคิว";
             }
         }
 
         async function loadDaySlots() {
             document.getElementById('cust-thai-date-label').innerText = formatThaiDate(currentSelectedDate);
             const container = document.getElementById('cust-slots-container');
-            container.innerHTML = '<p class="text-xs text-gray-400 text-center py-8 font-medium">🔄 กำลังโหลดช่วงเวลาที่เปิดรับจอง...</p>';
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-8 font-medium">🔄 กำลังโหลดช่วงเวลาที่เปิดรับจอง...</p>';
 
             const { data: slots } = await _supabase
                 .from('booking_slots')
@@ -440,10 +454,10 @@
             if (daySlotsData.length === 0) {
                 document.getElementById('available-slots-count').innerText = "0 สล็อต";
                 container.innerHTML = `
-                    <div class="text-center py-12 bg-white rounded-3xl border border-gray-200 shadow-2xs">
+                    <div class="text-center py-12 bg-white rounded-3xl border border-slate-200/80 shadow-2xs">
                         <p class="text-4xl mb-2">😴</p>
-                        <p class="text-xs font-bold text-gray-700">ไม่มีช่วงเวลาเปิดรับจองในวันนี้</p>
-                        <p class="text-[11px] text-gray-400 mt-1 font-medium">ลองกดปุ่มเลื่อนเปลี่ยนวันที่ต้องการดูนะครับ</p>
+                        <p class="text-xs font-bold text-slate-700">ไม่มีช่วงเวลาเปิดรับจองในวันนี้</p>
+                        <p class="text-[11px] text-slate-400 mt-1 font-medium">ลองกดเปลี่ยนวันที่ดูสล็อตถัดไปได้เลยครับ</p>
                     </div>
                 `;
                 return;
@@ -476,34 +490,34 @@
                 if (!isFull && !isPassed) availableSlotsCount++;
 
                 const card = document.createElement('div');
-                card.className = `p-4 bg-white rounded-2xl border transition-all ${
+                card.className = `p-4 rounded-3xl border transition-all ${
                     isMyBooked 
-                        ? 'border-emerald-300 bg-emerald-50/40 shadow-xs' 
-                        : (isFull || isPassed ? 'border-gray-200 bg-gray-50/70 opacity-60' : 'border-indigo-100 shadow-2xs')
+                        ? 'border-emerald-300 bg-emerald-50/50 shadow-xs' 
+                        : (isFull || isPassed ? 'border-slate-200 bg-slate-100/60 opacity-60' : 'border-rose-100/80 bg-white shadow-2xs hover:shadow-xs')
                 } flex items-center justify-between gap-2`;
 
                 let actionButtonHtml = '';
                 if (isMyBooked) {
                     actionButtonHtml = `
-                        <span class="px-3 py-2 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-black border border-emerald-200/80">
+                        <span class="px-3.5 py-2 bg-emerald-100 text-emerald-800 rounded-2xl text-xs font-black border border-emerald-200">
                             ✓ จองแล้ว
                         </span>
                     `;
                 } else if (isPassed) {
                     actionButtonHtml = `
-                        <span class="px-3 py-2 bg-gray-200 text-gray-500 rounded-xl text-xs font-bold">
+                        <span class="px-3 py-2 bg-slate-200 text-slate-500 rounded-2xl text-xs font-bold">
                             หมดเวลา
                         </span>
                     `;
                 } else if (isFull) {
                     actionButtonHtml = `
-                        <span class="px-3 py-2 bg-red-100 text-red-600 rounded-xl text-xs font-bold">
+                        <span class="px-3 py-2 bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold">
                             คิวเต็ม
                         </span>
                     `;
                 } else {
                     actionButtonHtml = `
-                        <button onclick="openBookingModal('${slot.id}')" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer">
+                        <button onclick="openBookingModal('${slot.id}')" class="px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-2xl text-xs font-black shadow-sm active:scale-95 transition cursor-pointer">
                             กดจองคิว
                         </button>
                     `;
@@ -512,10 +526,10 @@
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center gap-2">
-                            <p class="font-mono font-black text-lg text-gray-900">${slot.start_time.substring(0,5)} - ${slot.end_time.substring(0,5)} น.</p>
-                            ${isMyBooked ? '<span class="text-[10px] font-black px-1.5 py-0.5 bg-emerald-600 text-white rounded">คิวของคุณ</span>' : ''}
+                            <p class="font-mono font-black text-lg text-slate-800">${slot.start_time.substring(0,5)} - ${slot.end_time.substring(0,5)} น.</p>
+                            ${isMyBooked ? '<span class="text-[10px] font-black px-2 py-0.5 bg-emerald-600 text-white rounded-md shadow-2xs">คิวของคุณ</span>' : ''}
                         </div>
-                        <p class="text-xs ${isMyBooked ? 'text-emerald-700 font-bold' : (isFull || isPassed ? 'text-gray-400 font-medium' : 'text-emerald-600 font-bold')} mt-0.5">
+                        <p class="text-xs ${isMyBooked ? 'text-emerald-700 font-bold' : (isFull || isPassed ? 'text-slate-400 font-medium' : 'text-rose-500 font-bold')} mt-0.5">
                             ${isMyBooked 
                                 ? '✅ คุณได้ลงทะเบียนจองรอบนี้เรียบร้อยแล้ว' 
                                 : (isPassed ? '⏰ ช่วงเวลานี้ผ่านไปแล้ว' : (isFull ? '⚠️ คิวเต็มแล้ว' : `ว่างอีก ${remaining} คิว (จองแล้ว ${bookedCount}/${slot.max_capacity})`))}
@@ -531,7 +545,7 @@
 
         window.openBookingModal = function(slotId) {
             if (myActiveBookings.length >= 3) {
-                alert("⚠️ คุณลูกค้าจองคิวล่วงหน้าครบ 3 สล็อตแล้วครับ!\nหากต้องการเปลี่ยนรอบ กรุณาไปที่แท็บ 'คิวของฉัน' เพื่อยกเลิกคิวเดิมก่อนครับ");
+                alert("⚠️ คุณลูกค้าจองคิวล่วงหน้าครบ 3 คิวแล้วครับ!\nหากต้องการเปลี่ยนรอบ กรุณาไปที่แท็บ 'คิวของฉัน' เพื่อยกเลิกคิวเดิมก่อนครับ");
                 return;
             }
 
@@ -584,8 +598,8 @@
             const activeContainer = document.getElementById('active-bookings-list');
             const pastContainer = document.getElementById('past-bookings-list');
 
-            activeContainer.innerHTML = '<p class="text-xs text-gray-400 py-4 text-center font-medium">🔄 กำลังโหลดข้อมูลคิว...</p>';
-            pastContainer.innerHTML = '<p class="text-xs text-gray-400 py-4 text-center font-medium">🔄 กำลังโหลดประวัติย้อนหลัง...</p>';
+            activeContainer.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center font-medium">🔄 กำลังโหลดข้อมูลคิว...</p>';
+            pastContainer.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center font-medium">🔄 กำลังโหลดประวัติย้อนหลัง...</p>';
 
             let query = _supabase
                 .from('bookings')
@@ -615,19 +629,19 @@
 
             activeContainer.innerHTML = '';
             if (activeList.length === 0) {
-                activeContainer.innerHTML = '<p class="text-xs text-gray-400 bg-white p-5 rounded-2xl text-center font-medium border border-gray-200">ไม่มีคิวล่วงหน้าที่รอรับบริการ</p>';
+                activeContainer.innerHTML = '<p class="text-xs text-slate-400 bg-white p-5 rounded-3xl text-center font-medium border border-slate-200/80">ไม่มีคิวล่วงหน้าที่รอรับบริการ</p>';
             } else {
                 activeList.forEach(b => {
                     const card = document.createElement('div');
-                    card.className = "p-4 bg-white rounded-2xl border border-indigo-200 shadow-2xs flex items-center justify-between gap-2";
+                    card.className = "p-4.5 bg-white rounded-3xl border border-rose-100 shadow-2xs flex items-center justify-between gap-2";
                     card.innerHTML = `
                         <div>
-                            <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 font-extrabold rounded-md text-[11px] border border-indigo-100">📅 ${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)})</span>
-                            <p class="font-mono font-black text-base text-gray-900 mt-1.5">🕒 ${b.booking_slots.start_time.substring(0,5)} - ${b.booking_slots.end_time.substring(0,5)} น.</p>
-                            <p class="text-xs text-gray-600 font-bold mt-0.5">✂️ บริการ: ${b.service_type}</p>
-                            <p class="text-[11px] text-gray-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
+                            <span class="px-2.5 py-0.5 bg-rose-50 text-rose-600 font-extrabold rounded-md text-[11px] border border-rose-100">📅 ${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)})</span>
+                            <p class="font-mono font-black text-base text-slate-800 mt-1.5">🕒 ${b.booking_slots.start_time.substring(0,5)} - ${b.booking_slots.end_time.substring(0,5)} น.</p>
+                            <p class="text-xs text-slate-600 font-bold mt-0.5">✂️ บริการ: ${b.service_type}</p>
+                            <p class="text-[11px] text-slate-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
                         </div>
-                        <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}', '${b.booking_slots.start_time.substring(0,5)}')" class="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-black border border-red-200 transition cursor-pointer shrink-0">
+                        <button onclick="cancelMyBooking('${b.id}', '${b.booking_slots.date}', '${b.booking_slots.start_time.substring(0,5)}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-black border border-rose-200 transition cursor-pointer shrink-0 active:scale-95">
                             ยกเลิกคิว
                         </button>
                     `;
@@ -637,19 +651,19 @@
 
             pastContainer.innerHTML = '';
             if (pastList.length === 0) {
-                pastContainer.innerHTML = '<p class="text-xs text-gray-400 bg-white p-5 rounded-2xl text-center font-medium border border-gray-200">ไม่มีประวัติการจองย้อนหลัง</p>';
+                pastContainer.innerHTML = '<p class="text-xs text-slate-400 bg-white p-5 rounded-3xl text-center font-medium border border-slate-200/80">ไม่มีประวัติการจองย้อนหลัง</p>';
             } else {
                 pastList.forEach(b => {
                     const isCancelled = b.status === 'cancelled';
                     const card = document.createElement('div');
-                    card.className = "p-3.5 bg-white rounded-2xl border border-gray-200/80 opacity-75 flex items-center justify-between text-xs";
+                    card.className = "p-3.5 bg-white rounded-2xl border border-slate-200/80 opacity-75 flex items-center justify-between text-xs";
                     card.innerHTML = `
                         <div>
-                            <p class="font-black text-gray-800 font-mono">${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)}) | ${b.booking_slots.start_time.substring(0,5)} น.</p>
-                            <p class="text-gray-500 font-bold mt-0.5">บริการ: ${b.service_type}</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
+                            <p class="font-black text-slate-700 font-mono">${b.booking_slots.date} (${formatThaiDate(b.booking_slots.date)}) | ${b.booking_slots.start_time.substring(0,5)} น.</p>
+                            <p class="text-slate-500 font-bold mt-0.5">บริการ: ${b.service_type}</p>
+                            <p class="text-[10px] text-slate-400 font-mono mt-0.5">📞 เบอร์ขณะจอง: ${b.customer_phone}</p>
                         </div>
-                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-black ${isCancelled ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-gray-100 text-gray-600 border border-gray-200'}">
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-black ${isCancelled ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
                             ${isCancelled ? 'ยกเลิกแล้ว' : 'ผ่านไปแล้ว'}
                         </span>
                     `;

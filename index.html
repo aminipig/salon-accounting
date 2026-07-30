@@ -216,7 +216,6 @@
 
     <!-- Supabase Logic Engine -->
     <script>
-        // 🌟 ใส่ค่า API Keys ของคุณปิงเรียบร้อยครับ
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
 
@@ -283,15 +282,16 @@
             }
         }
 
+        // 🌟 เพิ่มการจับข้อผิดพลาด OAuth
         document.getElementById('btn-login-google').addEventListener('click', async () => {
             try {
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.href
+                        redirectTo: window.location.origin + window.location.pathname
                     }
                 });
-                if (error) throw error;
+                if (error) alert("OAuth Error: " + error.message);
             } catch (error) {
                 alert("การล็อกอินล้มเหลว: " + error.message);
             }

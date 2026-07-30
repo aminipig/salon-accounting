@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บริหารสล็อตเวลาจอง - ร้านสระผมคุณส้ม</title>
+    <title>บริหารสล็อตเวลาจอง v0.01 - ร้านสระผมคุณส้ม</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -14,7 +14,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-gray-100">
             <div class="text-5xl mb-3">🗓️</div>
             <h2 class="text-2xl font-bold text-gray-900 mb-1">ระบบจัดการเวลาจองคิว</h2>
-            <p class="text-sm text-gray-500 mb-6">สำหรับเจ้าของร้านและผู้ดูแลระบบ 💇‍♀️</p>
+            <p class="text-sm text-gray-500 mb-6">สำหรับเจ้าของร้าน <span class="ml-1 px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md font-mono text-xs font-semibold">v0.01</span></p>
             
             <button id="btn-login-google" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-2.5 px-4 rounded-xl shadow-xs hover:shadow-md transition cursor-pointer text-sm">
                 <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -22,6 +22,7 @@
                 </svg>
                 ลงชื่อเข้าใช้ด้วย Google Account
             </button>
+            <p class="text-xs text-gray-400 mt-6">ระบบความปลอดภัยขับเคลื่อนโดย Supabase Auth</p>
         </div>
     </div>
 
@@ -32,7 +33,7 @@
                 <span class="text-2xl">✂️</span>
                 <div>
                     <h2 class="font-bold text-base tracking-wide">ระบบบริหารเวลาจองคิว</h2>
-                    <p class="text-[10px] text-indigo-300 font-mono">ร้านสระผมคุณส้ม</p>
+                    <p class="text-[10px] text-emerald-400 font-mono -mt-0.5">version 0.01</p>
                 </div>
             </div>
             
@@ -65,7 +66,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- ฟอร์มสร้างรอบเวลาใหม่ (ปรับเป็น Dropdown 15 นาที) -->
+            <!-- ฟอร์มสร้างรอบเวลาใหม่ -->
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <span>➕</span> สร้างช่วงเวลาเปิดรับจอง
@@ -135,7 +136,7 @@
     <!-- Supabase Module Logic -->
     <script>
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInRefiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentSelectedDate = new Date().toISOString().split('T')[0];
@@ -162,7 +163,6 @@
             });
         });
 
-        // --- สร้างตัวเลือกชั่วโมง 00-24 ---
         function initTimeDropdowns() {
             const startHourSelect = document.getElementById('start-hour');
             const endHourSelect = document.getElementById('end-hour');
@@ -173,18 +173,17 @@
                 const optStart = document.createElement('option');
                 optStart.value = hourStr;
                 optStart.innerText = `${hourStr} น.`;
-                if (i === 9) optStart.selected = true; // ค่าเริ่มต้น 09:00
+                if (i === 9) optStart.selected = true;
                 startHourSelect.appendChild(optStart);
 
                 const optEnd = document.createElement('option');
                 optEnd.value = hourStr;
                 optEnd.innerText = `${hourStr} น.`;
-                if (i === 10) optEnd.selected = true; // ค่าเริ่มต้น 10:00
+                if (i === 10) optEnd.selected = true;
                 endHourSelect.appendChild(optEnd);
             }
         }
 
-        // --- ฟังก์ชันช่วยเหลือเกี่ยวกับ Log ---
         function getThaiZoneISOString() {
             const now = new Date();
             const options = {
@@ -217,7 +216,6 @@
             }
         }
 
-        // --- Auth & Session ---
         async function loginWithGoogle() {
             const redirectUrl = window.location.origin + window.location.pathname;
             await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectUrl } });
@@ -257,11 +255,9 @@
             }
         }
 
-        // --- Fetch & Render Data ---
         async function loadDayData() {
             document.getElementById('display-selected-date').innerText = currentSelectedDate;
             
-            // 1. ดึงสล็อตเวลา
             const { data: slots, error: slotErr } = await _supabase
                 .from('booking_slots')
                 .select('*')
@@ -271,7 +267,6 @@
             if (slotErr) console.error("Slot fetch error:", slotErr);
             slotsData = slots || [];
 
-            // 2. ดึงข้อมูลรายการจอง
             const slotIds = slotsData.map(s => s.id);
             if (slotIds.length > 0) {
                 const { data: bookings, error: bookErr } = await _supabase
@@ -354,7 +349,6 @@
             });
         }
 
-        // --- Actions with Log Recording ---
         document.getElementById('slot-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const startH = document.getElementById('start-hour').value;

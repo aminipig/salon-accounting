@@ -11,14 +11,13 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-900 pb-20">
 
-    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า (Google Account & LINE Login) -->
+    <!-- 1. หน้าเข้าสู่ระบบสำหรับลูกค้า -->
     <div id="customer-login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-linear-to-b from-indigo-600 via-purple-600 to-indigo-800">
         <div class="bg-white p-7 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
             <div class="text-6xl mb-3">💇‍♀️</div>
             <h1 class="text-2xl font-black text-gray-900 mb-1 tracking-tight">ร้านสระผมคุณส้ม</h1>
             <p class="text-xs text-gray-500 mb-6 font-medium">ระบบจองคิวใช้บริการออนไลน์ <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md font-mono text-[11px] font-bold border border-indigo-100">v0.01</span></p>
 
-            <!-- ตัวเลือกเข้าใช้งาน 2 วิธีปลอดภัย -->
             <div class="space-y-3.5">
                 <!-- ปุ่มเข้าผ่าน LINE -->
                 <button id="btn-login-line" class="w-full flex items-center justify-center gap-3 bg-[#06C755] hover:bg-[#05b34c] text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-sm transition text-sm cursor-pointer">
@@ -49,7 +48,6 @@
 
     <!-- 2. ส่วนแอปพลิเคชันหลักบนมือถือ -->
     <div id="customer-main-app" class="max-w-md mx-auto min-h-screen bg-gray-50 hidden">
-        <!-- Top Header Bar -->
         <header class="bg-gray-900 text-white p-4 sticky top-0 z-40 flex items-center justify-between shadow-md">
             <div class="flex items-center gap-2.5">
                 <img id="user-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full border-2 border-indigo-400 bg-gray-700 hidden shrink-0 object-cover">
@@ -68,7 +66,6 @@
             </button>
         </header>
 
-        <!-- โควตาสิทธิ์จองคงเหลือ Alert Card -->
         <div class="p-4">
             <div class="bg-linear-to-r from-indigo-600 to-purple-600 text-white p-4.5 rounded-3xl shadow-md flex items-center justify-between">
                 <div>
@@ -83,7 +80,6 @@
             </div>
         </div>
 
-        <!-- แท็บสลับหน้า: จองคิวใหม่ / คิวของฉัน & ประวัติ -->
         <div class="px-4 mb-4">
             <div class="grid grid-cols-2 p-1 bg-gray-200/80 rounded-2xl text-xs font-bold text-center">
                 <button id="tab-btn-book" class="py-2.5 rounded-xl bg-white text-indigo-600 shadow-2xs transition cursor-pointer font-black">
@@ -95,9 +91,7 @@
             </div>
         </div>
 
-        <!-- หน้าที่ 1: ตารางเลือกรอบจอง -->
         <div id="view-booking-section" class="px-4 space-y-4">
-            <!-- ตัวเลื่อนเลือกวัน -->
             <div class="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                 <button id="btn-cust-prev-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">◀</button>
                 <div class="text-center">
@@ -108,7 +102,6 @@
                 <button id="btn-cust-next-day" class="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 text-xs font-black text-gray-700">▶</button>
             </div>
 
-            <!-- รายการรอบสล็อตที่ว่าง -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between px-1">
                     <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider">ช่วงเวลาที่เปิดรับจอง</h3>
@@ -120,7 +113,6 @@
             </div>
         </div>
 
-        <!-- หน้าที่ 2: คิวที่จองไว้ & ประวัติ 30 วัน -->
         <div id="view-history-section" class="px-4 space-y-4 hidden">
             <div>
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2.5 px-1">📌 คิวล่วงหน้าที่รอรับบริการ (ยกเลิกเพื่อจองใหม่ได้)</h3>
@@ -206,11 +198,11 @@
     <script>
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
-        const LIFF_ID = "2010902328-ujV1R7Rw";
+        const MY_LIFF_ID = "2010902328-ujV1R7Rw";
 
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null; // { id, name, phone, email, avatar, provider }
+        let currentUser = null; 
         let currentSelectedDate = new Date().toISOString().split('T')[0];
         let daySlotsData = [];
         let dayBookingsData = [];
@@ -235,6 +227,9 @@
                     provider: 'google'
                 };
             }
+
+            // 2. ตรวจสอบ LINE LIFF Auto Load
+            await checkAutoLineLiff();
 
             checkUserLoginState();
 
@@ -285,21 +280,48 @@
             document.getElementById('modal-confirm-form').addEventListener('submit', submitBooking);
         });
 
-        // ฟังก์ชันเข้าสู่ระบบด้วย LINE แบบปลอดภัย ไม่เกิด Error ป๊อปอัพ
-        async function loginWithLine() {
-            if (!window.liff) {
-                alert("ไม่สามารถเชื่อมต่อ LINE SDK ได้ กรุณาลองเปิดอีกครั้งครับ");
-                return;
-            }
+        // ตรวจสอบสถานะ LINE LIFF แบบปลอดภัย
+        async function checkAutoLineLiff() {
+            if (!window.liff || !MY_LIFF_ID) return;
             try {
-                if (!liff.isLoggedIn()) {
-                    await liff.init({ liffId: LIFF_ID });
-                    if (!liff.isLoggedIn()) {
-                        liff.login();
+                // เช็คเฉพาะกรณีที่เปิดผ่าน LIFF URL หรือเปิดค้างไว้
+                if (window.location.search.includes('liff') || liff.isInClient()) {
+                    await liff.init({ liffId: MY_LIFF_ID });
+                    if (liff.isLoggedIn()) {
+                        const profile = await liff.getProfile();
+                        currentUser = {
+                            id: profile.userId,
+                            name: profile.displayName || "ลูกค้า LINE",
+                            phone: localStorage.getItem(`cust_phone_${profile.userId}`) || null,
+                            email: null,
+                            avatar: profile.pictureUrl || null,
+                            provider: 'line'
+                        };
                     }
                 }
-                
-                if (liff.isLoggedIn()) {
+            } catch (err) {
+                console.log("LIFF Auto Init skipped/failed:", err.message);
+            }
+        }
+
+        // กดปุ่มเข้าสู่ระบบด้วย LINE
+        async function loginWithLine() {
+            if (!window.liff) {
+                alert("ไม่สามารถโหลด LINE SDK ได้ กรุณารีเฟรชหน้าเว็บแล้วลองใหม่อีกครั้งครับ");
+                return;
+            }
+
+            try {
+                if (!MY_LIFF_ID) {
+                    alert("⚠️ ไม่พบคีย์ MY_LIFF_ID");
+                    return;
+                }
+
+                await liff.init({ liffId: MY_LIFF_ID });
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
                     const profile = await liff.getProfile();
                     currentUser = {
                         id: profile.userId,
@@ -312,7 +334,7 @@
                     checkUserLoginState();
                 }
             } catch (err) {
-                alert("การเชื่อมต่อ LINE เกิดปัญหา: " + err.message + "\n(กรุณาตรวจสอบว่าเปิดผ่าน LINE In-App Browser หรือตั้งค่า Endpoint URL ใน LINE Developers ถูกต้องแล้วหรือยัง)");
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ LINE:\n" + err.message + "\n\n💡 คำแนะนำ: โปรดตรวจสอบ Endpoint URL ใน LINE Developers ให้เป็น:\nhttps://aminipig.github.io/salon-accounting/customer_booking.html");
             }
         }
 

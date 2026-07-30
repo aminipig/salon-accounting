@@ -279,7 +279,7 @@
             return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second}`;
         }
 
-        // 🌟 ฟังก์ชันบันทึก Activity Log ฝั่งลูกค้า
+        // 🌟 ฟังก์ชันบันทึก Activity Log ฝั่งลูกค้า (ช่อง action บันทึกกิจกรรมกระชับ ไม่ติดคำว่า (ลูกค้า))
         async function writeCustomerActivityLog(actionType, details) {
             try {
                 if (!currentUser) return;
@@ -359,7 +359,7 @@
 
                 if (!hasLoggedCustomerSession) {
                     hasLoggedCustomerSession = true;
-                    await writeCustomerActivityLog("เข้าสู่ระบบ (ลูกค้า)", `เข้าใช้งานระบบจองคิวผ่าน ${provider.toUpperCase()}`);
+                    await writeCustomerActivityLog("เข้าสู่ระบบ", `เข้าใช้งานระบบจองคิวผ่าน ${provider.toUpperCase()}`);
                 }
             } else {
                 currentUser = null;
@@ -399,7 +399,7 @@
 
         async function logoutCustomer() {
             if (confirm("ต้องการออกจากระบบใช่ไหมครับ?")) {
-                await writeCustomerActivityLog("ออกจากระบบ (ลูกค้า)", "กดออกจากระบบจองคิว");
+                await writeCustomerActivityLog("ออกจากระบบ", "กดออกจากระบบจองคิว");
                 currentUser = null;
                 hasLoggedCustomerSession = false;
                 await _supabase.auth.signOut();
@@ -663,7 +663,7 @@
             document.getElementById('modal-custom-service').value = '';
         }
 
-        // 🌟 บันทึกการจอง พร้อมเพิ่ม Activity Log
+        // 🌟 บันทึกการจอง พร้อมเพิ่ม Activity Log (ช่อง action ไม่ติดคำว่า (ลูกค้า))
         async function submitBooking(e) {
             e.preventDefault();
             if (!selectedSlotForBooking) return;
@@ -691,7 +691,10 @@
                 
                 // 🌟 บันทึก Log การจองคิว
                 const timeText = `${selectedSlotForBooking.start_time.substring(0,5)} - ${selectedSlotForBooking.end_time.substring(0,5)} น.`;
-                await writeCustomerActivityLog("จองคิวสำเร็จ", `จองคิววันที่ ${selectedSlotForBooking.date} เวลา ${timeText} | บริการ: ${service} (เบอร์: ${currentUser.phone})`);
+                await writeCustomerActivityLog(
+                    "จองคิวสำเร็จ", 
+                    `จองคิววันที่ ${selectedSlotForBooking.date} เวลา ${timeText} | บริการ: ${service} | เบอร์ติดต่อ: ${currentUser.phone}`
+                );
 
                 closeModal();
                 loadCustomerDashboardData();
@@ -781,7 +784,7 @@
             }
         }
 
-        // 🌟 บันทึก Log เมื่อลูกค้าวิธีกดยกเลิกคิว
+        // 🌟 บันทึก Log เมื่อลูกค้ายกเลิกคิว (ช่อง action สั้นกระชับ)
         window.cancelMyBooking = async function(bookingId, bookingDate, bookingTime, serviceType) {
             if (confirm(`คุณต้องการยกเลิกคิวการจองวันที่ ${bookingDate} เวลา ${bookingTime} น. ใช่ไหมครับ?`)) {
                 const { error } = await _supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
@@ -791,7 +794,10 @@
                     alert("ยกเลิกคิวเรียบร้อยครับ สามารถเลือกจองสล็อตใหม่ได้เลยครับ");
 
                     // 🌟 บันทึก Log การยกเลิกคิว
-                    await writeCustomerActivityLog("ยกเลิกคิว (ลูกค้า)", `ยกเลิกคิววันที่ ${bookingDate} เวลา ${bookingTime} น. (บริการ: ${serviceType})`);
+                    await writeCustomerActivityLog(
+                        "ยกเลิกคิว", 
+                        `ยกเลิกรายการจองคิววันที่ ${bookingDate} เวลา ${bookingTime} น. | บริการ: ${serviceType}`
+                    );
 
                     loadCustomerDashboardData();
                     loadCustomerHistoryData();

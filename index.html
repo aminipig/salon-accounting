@@ -219,7 +219,6 @@
         const SUPABASE_URL = "https://kvusfpielbyxgdrlpowd.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2dXNmcGllbGJ5eGdkcmxwb3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY2MTAsImV4cCI6MjEwMDk0MjYxMH0.Jm2oFPBGgoSt7C0C8q8_HggD2_Jm7JfHX1sdj1LDzTQ";
 
-        // สร้าง Supabase Client จาก UMD Object
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         window.transactions = []; 
@@ -504,12 +503,14 @@
             displayRecords.forEach((t, index) => {
                 const rowNumber = startIndex + index + 1; 
                 
+                // 🌟 ดึงค่าช่องทางการชำระเงิน (รองรับทั้ง paymentMethod และ paymentmethod)
+                const methodVal = t.paymentMethod || t.paymentmethod;
                 let paymentMethodBadge = `<span class="text-gray-400 font-mono">-</span>`;
-                if (t.paymentMethod) {
-                    if (t.paymentMethod === 'เงินโอน') {
-                        paymentMethodBadge = `<span class="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md shadow-3xs">💰 ${t.paymentMethod}</span>`;
-                    } else if (t.paymentMethod === 'เงินสด') {
-                        paymentMethodBadge = `<span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shadow-3xs">💵 ${t.paymentMethod}</span>`;
+                if (methodVal) {
+                    if (methodVal === 'เงินโอน') {
+                        paymentMethodBadge = `<span class="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md shadow-3xs">💰 ${methodVal}</span>`;
+                    } else if (methodVal === 'เงินสด') {
+                        paymentMethodBadge = `<span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shadow-3xs">💵 ${methodVal}</span>`;
                     }
                 }
 
@@ -560,7 +561,7 @@
             document.getElementById('description').value = item.description;
             document.getElementById('amount').value = item.amount;
             document.getElementById('notes').value = item.notes || ""; 
-            document.getElementById('payment-method').value = item.paymentMethod || "เงินสด";
+            document.getElementById('payment-method').value = item.paymentMethod || item.paymentmethod || "เงินสด";
 
             document.getElementById('form-title').innerText = "📝 แก้ไขรายการข้อมูล";
             document.getElementById('btn-submit').innerText = "อัปเดตข้อมูล";
@@ -656,14 +657,17 @@
             const pad = (num) => String(num).padStart(2, '0');
             const timeString = `${pad(nowTime.getHours())}:${pad(nowTime.getMinutes())}:${pad(nowTime.getSeconds())}`;
             const fullDateTimeStampString = `${inputDateValue} ${timeString}`;
+            const selectedMethod = document.getElementById('payment-method').value;
 
+            // 🌟 สร้าง Object Payload รองรับคอลัมน์ Supabase ทั้ง 2 รูปแบบ
             const payload = {
                 date: fullDateTimeStampString, 
                 type: itemType,
                 description: document.getElementById('description').value,
                 amount: parseFloat(document.getElementById('amount').value),
                 notes: document.getElementById('notes').value,
-                paymentMethod: document.getElementById('payment-method').value
+                paymentMethod: selectedMethod,
+                paymentmethod: selectedMethod
             };
 
             try {
@@ -672,13 +676,32 @@
                     if (existingItem && existingItem.date.substring(0,10) === inputDateValue) {
                         payload.date = existingItem.date; 
                     }
-                    const { error } = await _supabase.from('salon_records').update(payload).eq('id', editId);
+                    // ยิงอัปเดต โดยถ้าติด Error เรื่องคอลัมน์ ให้ตัดตัวแปรส่วนเกินแล้วลองอีกรอบ
+                    let { error } = await _supabase.from('salon_records').update(payload).eq('id', editId);
+                    if (error && error.message.includes('paymentmethod')) {
+                        delete payload.paymentmethod;
+                        const res = await _supabase.from('salon_records').update(payload).eq('id', editId);
+                        error = res.error;
+                    } else if (error && error.message.includes('paymentMethod')) {
+                        delete payload.paymentMethod;
+                        const res = await _supabase.from('salon_records').update(payload).eq('id', editId);
+                        error = res.error;
+                    }
                     if (error) throw error;
-                    await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
+                    await writeActivityLog("แก้ไขรายการ", `แก้ไขเป็น: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${selectedMethod})`);
                 } else {
-                    const { error } = await _supabase.from('salon_records').insert([payload]);
+                    let { error } = await _supabase.from('salon_records').insert([payload]);
+                    if (error && error.message.includes('paymentmethod')) {
+                        delete payload.paymentmethod;
+                        const res = await _supabase.from('salon_records').insert([payload]);
+                        error = res.error;
+                    } else if (error && error.message.includes('paymentMethod')) {
+                        delete payload.paymentMethod;
+                        const res = await _supabase.from('salon_records').insert([payload]);
+                        error = res.error;
+                    }
                     if (error) throw error;
-                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${payload.paymentMethod})`);
+                    await writeActivityLog("สร้างรายการใหม่", `เพิ่มรายการ: "${payload.description}" ยอด ${payload.amount.toFixed(2)} บ. (${selectedMethod})`);
                 }
                 window.resetFormMode();
             } catch (error) { alert("บันทึกข้อมูลล้มเหลว: " + error.message); }
@@ -706,7 +729,7 @@
                 const dateObj = new Date(t.date.substring(0, 10));
                 const formattedDate = `${dateObj.getDate()} ${thaiShortMonths[dateObj.getMonth()]} ${dateObj.getFullYear() + 543}`;
                 
-                const methodStr = t.paymentMethod || "เงินสด";
+                const methodStr = t.paymentMethod || t.paymentmethod || "เงินสด";
                 
                 dataRows.push([formattedDate, t.description, methodStr, isIncome ? amt : "", !isIncome ? amt : "", currentBalance, t.notes || "-"]);
             });

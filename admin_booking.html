@@ -66,59 +66,95 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- ฟอร์มสร้างรอบเวลาใหม่ -->
-            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 h-fit">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>➕</span> สร้างช่วงเวลาเปิดรับจอง
-                </h3>
-                
-                <form id="slot-form" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">เวลาเริ่มต้น</label>
-                        <div class="flex items-center gap-2">
-                            <select id="start-hour" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500"></select>
-                            <select id="start-min" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500">
-                                <option value="00">00</option>
-                                <option value="15">15</option>
-                                <option value="30">30</option>
-                                <option value="45">45</option>
-                            </select>
-                            <span class="text-sm font-semibold text-gray-600 shrink-0">น.</span>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">เวลาสิ้นสุด</label>
-                        <div class="flex items-center gap-2">
-                            <select id="end-hour" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500"></select>
-                            <select id="end-min" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500">
-                                <option value="00">00</option>
-                                <option value="15">15</option>
-                                <option value="30">30</option>
-                                <option value="45">45</option>
-                            </select>
-                            <span class="text-sm font-semibold text-gray-600 shrink-0">น.</span>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">จำนวนคิวสูงสุดที่รับได้ต่อรอบ</label>
-                        <input type="number" id="max-capacity" value="1" min="1" max="10" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
-                    </div>
+            <!-- คอลัมน์ซ้าย: ฟอร์มสร้างรอบเวลา & คัดลอกแบบแม่แบบ -->
+            <div class="space-y-6">
+                <!-- ฟอร์มสร้างรอบเวลาใหม่ -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span>➕</span> สร้างช่วงเวลาเปิดรับจอง
+                    </h3>
                     
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition cursor-pointer text-sm shadow-xs">
-                        เปิดรอบเวลานี้
-                    </button>
-                </form>
+                    <form id="slot-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">เวลาเริ่มต้น</label>
+                            <div class="flex items-center gap-2">
+                                <select id="start-hour" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500"></select>
+                                <select id="start-min" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500">
+                                    <option value="00">00</option>
+                                    <option value="15">15</option>
+                                    <option value="30">30</option>
+                                    <option value="45">45</option>
+                                </select>
+                                <span class="text-sm font-semibold text-gray-600 shrink-0">น.</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">เวลาสิ้นสุด</label>
+                            <div class="flex items-center gap-2">
+                                <select id="end-hour" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500"></select>
+                                <select id="end-min" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium focus:outline-indigo-500">
+                                    <option value="00">00</option>
+                                    <option value="15">15</option>
+                                    <option value="30">30</option>
+                                    <option value="45">45</option>
+                                </select>
+                                <span class="text-sm font-semibold text-gray-600 shrink-0">น.</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">จำนวนคิวสูงสุดที่รับได้ต่อรอบ</label>
+                            <input type="number" id="max-capacity" value="1" min="1" max="10" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition cursor-pointer text-sm shadow-xs">
+                            เปิดรอบเวลานี้
+                        </button>
+                    </form>
 
-                <!-- ปุ่มตัวช่วยสร้างรอบมาตรฐานด่วน -->
-                <div class="mt-6 pt-5 border-t border-gray-100">
-                    <p class="text-xs font-semibold text-gray-500 mb-2">⚡ สร้างรอบมาตรฐานประจำวัน (09:00 - 21:00 น.)</p>
-                    <button id="btn-quick-generate" class="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2 rounded-xl font-medium text-xs transition cursor-pointer">
-                        + สร้างรอบทุก 1 ชม. อัตโนมัติ
-                    </button>
+                    <!-- ปุ่มตัวช่วยสร้างรอบมาตรฐานด่วน -->
+                    <div class="mt-6 pt-5 border-t border-gray-100">
+                        <p class="text-xs font-semibold text-gray-500 mb-2">⚡ สร้างรอบมาตรฐานประจำวัน (09:00 - 21:00 น.)</p>
+                        <button id="btn-quick-generate" class="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2 rounded-xl font-medium text-xs transition cursor-pointer">
+                            + สร้างรอบทุก 1 ชม. อัตโนมัติ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- กล่องตัวช่วยคัดลอก Slot เวลาจากวันเก่า -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
+                    <h3 class="text-md font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span>📋</span> คัดลอกรอบเวลาจากวันอื่น
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-4">ดึงแม่แบบช่วงเวลาจากวันที่เคยสร้างไว้ แล้วคัดลอกลงวันปัจจุบันหรือล่วงหน้า</p>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">เลือกวันที่เป็นแม่แบบ (ย้อนหลังไม่เกิน 30 วัน):</label>
+                            <select id="source-template-date" class="w-full p-2 border border-gray-300 rounded-xl text-xs bg-white font-medium focus:outline-indigo-500">
+                                <option value="">-- กำลังโหลดวันที่ย้อนหลัง --</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">คัดลอกสร้างล่วงหน้าจำนวน (วัน):</label>
+                            <select id="copy-days-count" class="w-full p-2 border border-gray-300 rounded-xl text-xs bg-white font-medium focus:outline-indigo-500">
+                                <option value="1">1 วัน (เฉพาะวันที่เลือกสั่งการ)</option>
+                                <option value="3">3 วัน ล่วงหน้า</option>
+                                <option value="5">5 วัน ล่วงหน้า</option>
+                                <option value="7">7 วัน (1 สัปดาห์)</option>
+                                <option value="14">14 วัน (2 สัปดาห์)</option>
+                                <option value="30">30 วัน (1 เดือน)</option>
+                            </select>
+                        </div>
+
+                        <button id="btn-copy-template" class="w-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 py-2.5 rounded-xl font-semibold text-xs transition cursor-pointer">
+                            🚀 คัดลอกและสร้างรอบเวลา
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- ตารางแสดงช่วงเวลา และรายชื่อผู้จอง -->
+            <!-- คอลัมน์ขวา: ตารางแสดงช่วงเวลา และรายชื่อผู้จอง -->
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
                     <div class="flex flex-wrap items-center justify-between mb-4 gap-2">
@@ -276,6 +312,7 @@
             document.getElementById('display-selected-date').innerText = currentSelectedDate;
             document.getElementById('display-thai-date').innerText = formatThaiDateString(currentSelectedDate);
             
+            // 1. ดึงสล็อตเวลาของวันที่เลือก
             const { data: slots, error: slotErr } = await _supabase
                 .from('booking_slots')
                 .select('*')
@@ -285,6 +322,7 @@
             if (slotErr) console.error("Slot fetch error:", slotErr);
             slotsData = slots || [];
 
+            // 2. ดึงข้อมูลรายการจอง
             const slotIds = slotsData.map(s => s.id);
             if (slotIds.length > 0) {
                 const { data: bookings, error: bookErr } = await _supabase
@@ -299,6 +337,37 @@
             }
 
             renderSlots();
+            loadRecentDatesForTemplate();
+        }
+
+        // ดึงรายการวันที่ย้อนหลัง 30 วันที่มีการสร้างสล็อตไว้ เพื่อใช้ทำแม่แบบ
+        async function loadRecentDatesForTemplate() {
+            const templateSelect = document.getElementById('source-template-date');
+            templateSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
+
+            const date30DaysAgo = new Date();
+            date30DaysAgo.setDate(date30DaysAgo.getDate() - 30);
+            const minDateStr = date30DaysAgo.toISOString().split('T')[0];
+
+            const { data, error } = await _supabase
+                .from('booking_slots')
+                .select('date')
+                .gte('date', minDateStr)
+                .order('date', { ascending: false });
+
+            if (error || !data || data.length === 0) {
+                templateSelect.innerHTML = '<option value="">ไม่มีสล็อตเวลาที่พบบันทึกไว้ใน 30 วันที่ผ่านมา</option>';
+                return;
+            }
+
+            const uniqueDates = [...new Set(data.map(d => d.date))];
+            templateSelect.innerHTML = '';
+            uniqueDates.forEach((dateStr, idx) => {
+                const opt = document.createElement('option');
+                opt.value = dateStr;
+                opt.innerText = `${dateStr} ${formatThaiDateString(dateStr)} ${idx === 0 ? ' (ล่าสุด)' : ''}`;
+                templateSelect.appendChild(opt);
+            });
         }
 
         function renderSlots() {
@@ -311,7 +380,7 @@
                     <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
                         <p class="text-3xl mb-2">😴</p>
                         <p class="text-sm font-semibold text-gray-600">ยังไม่มีการเปิดรอบเวลาจองในวันนี้</p>
-                        <p class="text-xs text-gray-400 mt-1">สามารถเลือกชั่วโมง-นาที แล้วกดสร้างรอบเวลาได้เลยครับ</p>
+                        <p class="text-xs text-gray-400 mt-1">สามารถเลือกชั่วโมง-นาที หรือใช้เมนูคัดลอกรอบเวลาด้านซ้ายได้เลยครับ</p>
                     </div>
                 `;
                 return;
@@ -319,16 +388,17 @@
 
             slotsData.forEach(slot => {
                 const slotBookings = bookingsData.filter(b => b.slot_id === slot.id && b.status !== 'cancelled');
-                const isFull = slotBookings.length >= slot.max_capacity;
+                const bookedCount = slotBookings.length;
+                const isFull = bookedCount >= slot.max_capacity;
 
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-xl border transition-all ${slot.is_open ? 'bg-white border-gray-200 shadow-2xs' : 'bg-gray-100 border-gray-200 opacity-60'}`;
 
                 let bookingsListHtml = '';
-                if (slotBookings.length > 0) {
+                if (bookedCount > 0) {
                     bookingsListHtml = `
                         <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                            <p class="text-xs font-bold text-gray-700">👤 รายชื่อลูกค้าที่จองแล้ว (${slotBookings.length}/${slot.max_capacity}):</p>
+                            <p class="text-xs font-bold text-gray-700">👤 รายชื่อลูกค้าที่จองแล้ว (${bookedCount}/${slot.max_capacity} คิว):</p>
                             ${slotBookings.map(b => `
                                 <div class="flex items-center justify-between text-xs bg-indigo-50/60 p-2 rounded-lg border border-indigo-100">
                                     <div>
@@ -347,10 +417,13 @@
 
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2.5">
                             <span class="text-lg font-bold font-mono text-gray-800">${slot.start_time.substring(0,5)} - ${slot.end_time.substring(0,5)} น.</span>
                             <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold ${slot.is_open ? (isFull ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700') : 'bg-gray-200 text-gray-600'}">
                                 ${!slot.is_open ? '🔒 ปิดรับจอง' : (isFull ? '⚠️ คิวเต็ม' : '✅ เปิดรับจอง')}
+                            </span>
+                            <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200/60 rounded-md font-mono text-xs font-bold">
+                                (${bookedCount}/${slot.max_capacity} คิว)
                             </span>
                         </div>
 
@@ -367,6 +440,17 @@
             });
         }
 
+        // --- ฟังก์ชันเช็คเวลาคลาดเคลื่อน/ซ้อนทับกัน (Overlapping Check) ---
+        // เงื่อนไข: ซ้อนกันเมื่อ (StartA < EndB) AND (EndA > StartB)
+        function checkTimeOverlap(newStart, newEnd, existingSlots) {
+            return existingSlots.some(slot => {
+                const existStart = slot.start_time;
+                const existEnd = slot.end_time;
+                return (newStart < existEnd) && (newEnd > existStart);
+            });
+        }
+
+        // --- สร้างรอบเวลาใหม่จากฟอร์ม ---
         document.getElementById('slot-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const startH = document.getElementById('start-hour').value;
@@ -379,7 +463,13 @@
             const maxCap = parseInt(document.getElementById('max-capacity').value);
 
             if (startTime >= endTime) {
-                alert("เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุดครับ!");
+                alert("⚠️ เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุดครับ!");
+                return;
+            }
+
+            // เช็คเวลาซ้อนทับในวันเดียวกัน
+            if (checkTimeOverlap(startTime, endTime, slotsData)) {
+                alert(`⚠️ ไม่สามารถสร้างรอบเวลา ${startH}:${startM} - ${endH}:${endM} น. ได้!\nเนื่องจากมีช่วงเวลาซ้อนทับกับรอบที่เปิดไว้อยู่แล้วครับ`);
                 return;
             }
 
@@ -399,13 +489,23 @@
             }
         });
 
+        // --- ปุ่มสร้างรอบอัตโนมัติ 09:00 - 21:00 น. ---
         document.getElementById('btn-quick-generate').addEventListener('click', async () => {
             if (!confirm(`ต้องการสร้างรอบเวลามาตรฐาน 12 รอบ (09:00 - 21:00 น.) สำหรับวันที่ ${currentSelectedDate} ใช่ไหมครับ?`)) return;
 
             const defaultSlots = [];
+            let overlapCount = 0;
+
             for (let hour = 9; hour < 21; hour++) {
                 const start = `${String(hour).padStart(2, '0')}:00:00`;
                 const end = `${String(hour + 1).padStart(2, '0')}:00:00`;
+                
+                // กรองไม่ใส่รอบที่ทับกับที่มีอยู่
+                if (checkTimeOverlap(start, end, slotsData)) {
+                    overlapCount++;
+                    continue;
+                }
+
                 defaultSlots.push({
                     date: currentSelectedDate,
                     start_time: start,
@@ -415,13 +515,95 @@
                 });
             }
 
+            if (defaultSlots.length === 0) {
+                alert("⚠️ ทุกรอบเวลาซ้อนทับกับรอบที่มีอยู่แล้วทั้งหมด ไม่มีการสร้างเพิ่มครับ");
+                return;
+            }
+
             const { error } = await _supabase.from('booking_slots').insert(defaultSlots);
             if (error) {
                 alert("สร้างรอบอัตโนมัติไม่สำเร็จ: " + error.message);
             } else {
-                await writeActivityLog("สร้างรอบเวลาอัตโนมัติ", `สร้างรอบมาตรฐาน 12 รอบ (09:00 - 21:00 น.) ประจำวันที่ ${currentSelectedDate}`);
+                let msg = `สร้างรอบมาตรฐานสำเร็จ ${defaultSlots.length} รอบ`;
+                if (overlapCount > 0) msg += ` (ข้ามรอบที่ซ้อนทับไป ${overlapCount} รอบ)`;
+                alert(msg);
+                await writeActivityLog("สร้างรอบเวลาอัตโนมัติ", `สร้างรอบมาตรฐาน (${currentSelectedDate}) เพิ่ม ${defaultSlots.length} รอบ`);
                 loadDayData();
             }
+        });
+
+        // --- ฟังก์ชัน คัดลอก Slot เวลาแม่แบบลงวันที่ปัจจุบัน/ล่วงหน้า ---
+        document.getElementById('btn-copy-template').addEventListener('click', async () => {
+            const templateDate = document.getElementById('source-template-date').value;
+            const copyDaysCount = parseInt(document.getElementById('copy-days-count').value);
+
+            if (!templateDate) {
+                alert("กรุณาเลือกวันที่เป็นแม่แบบก่อนครับ!");
+                return;
+            }
+
+            // ดึงสล็อตของวันแม่แบบ
+            const { data: templateSlots, error } = await _supabase
+                .from('booking_slots')
+                .select('*')
+                .eq('date', templateDate);
+
+            if (error || !templateSlots || templateSlots.length === 0) {
+                alert("ไม่พบสล็อตเวลาในวันที่เลือกเป็นแม่แบบครับ");
+                return;
+            }
+
+            if (!confirm(`ยืนยันคัดลอกสล็อตเวลาจำนวน ${templateSlots.length} รอบ จากวันที่ ${templateDate} ไปสร้างล่วงหน้า ${copyDaysCount} วัน (นับตั้งแต่วันที่สั่งการ ${currentSelectedDate})?`)) return;
+
+            let totalCreated = 0;
+            let totalSkippedOverlap = 0;
+
+            const baseDate = new Date(currentSelectedDate);
+
+            for (let dayOffset = 0; dayOffset < copyDaysCount; dayOffset++) {
+                const targetDateObj = new Date(baseDate);
+                targetDateObj.setDate(targetDateObj.getDate() + dayOffset);
+                const targetDateStr = targetDateObj.toISOString().split('T')[0];
+
+                // ดึงสล็อตที่มีอยู่ของวันเป้าหมายเพื่อเช็คซ้ำ
+                const { data: targetExisting } = await _supabase
+                    .from('booking_slots')
+                    .select('*')
+                    .eq('date', targetDateStr);
+                
+                const existingInTarget = targetExisting || [];
+                const newSlotsToInsert = [];
+
+                templateSlots.forEach(tSlot => {
+                    if (checkTimeOverlap(tSlot.start_time, tSlot.end_time, existingInTarget)) {
+                        totalSkippedOverlap++;
+                    } else {
+                        newSlotsToInsert.push({
+                            date: targetDateStr,
+                            start_time: tSlot.start_time,
+                            end_time: tSlot.end_time,
+                            max_capacity: tSlot.max_capacity,
+                            is_open: true
+                        });
+                    }
+                });
+
+                if (newSlotsToInsert.length > 0) {
+                    const { error: insErr } = await _supabase.from('booking_slots').insert(newSlotsToInsert);
+                    if (!insErr) {
+                        totalCreated += newSlotsToInsert.length;
+                    }
+                }
+            }
+
+            let resultMsg = `🎉 คัดลอกและสร้างสล็อตเวลาสำเร็จรวม ${totalCreated} รอบ (สำหรับ ${copyDaysCount} วัน)`;
+            if (totalSkippedOverlap > 0) {
+                resultMsg += `\n⚠️ (เว้นการสร้างไป ${totalSkippedOverlap} รอบ เนื่องจากเวลาซ้อนทับกับที่มีอยู่เดิม)`;
+            }
+            alert(resultMsg);
+
+            await writeActivityLog("คัดลอกรอบเวลาแบบกลุ่ม", `คัดลอกแม่แบบจากวันที่ ${templateDate} ไปยัง ${copyDaysCount} วันข้างหน้า (สร้างเพิ่ม ${totalCreated} รอบ)`);
+            loadDayData();
         });
 
         window.toggleSlotStatus = async function(id, newStatus, slotTime) {
